@@ -16,8 +16,7 @@ export default class Game {
 	}
 
 	initFrame () {
-		this.gameStarted = false;
-		this.gameStartTS = 0;
+		this.started = false;
 		this.frameRate = 1; // 60 fps would be great
 		this.frameRateMs = 1000/this.frameRate;
 	}
@@ -26,19 +25,19 @@ export default class Game {
 		// for test only
 		let BadGuy = new Unit({title:`Bad Guy`}, {lvl:10, attack:5});
 		let JohnWick = new Hero({title:`John Wick`}, {lvl:10, attack:10});
-		let testFight = new Fight(BadGuy, JohnWick);
-		testFight.connect(this);
-		console.log(testFight);
+		let BigLebowsky = new Hero({title:`Big Lebowsky`}, {lvl:20, attack:10});
+		let testFight = new Fight(BadGuy, JohnWick, BigLebowsky);
+		testFight.connectGame(this);
+		// console.log(testFight);
 		this.fights.add(testFight)		
 	}
 
 	startGame () {
 		console.log(`Start the Game!`);
-		this.gameStarted = true;
 		let now = performance.now();
 		this.dt = 0;
-		this.gameStartTS = now;
-		this.lastUpdateTS = now;
+		this.started = now;
+		this.updated = now;
 		this.past = now;
 
 		this.initTestFight();
@@ -46,11 +45,11 @@ export default class Game {
 	}
 
 	stopGame () {
-		this.gameStarted = false;
+		this.started = false;
 	}
 
 	frame (now) {
-		if( !this.gameStarted ) {
+		if( !this.started ) {
 			return;
 		}
 
@@ -59,12 +58,11 @@ export default class Game {
 		}
 
 		this.dt = now - this.past;
-		// console.log(this.dt);
 		this.past = now;
 
-		this.elapsedTime = now - this.lastUpdateTS;
-		if( this.elapsedTime >= this.frameRateMs ) {
-			this.lastUpdateTS = now;
+		let elapsed = now - this.updated;
+		if( elapsed >= this.frameRateMs ) {
+			this.updated = now;
 			this.update();
 			this.render();
 		}
@@ -97,7 +95,7 @@ export default class Game {
 				endedFightsCnt++;
 		});
 		let allFightsEnded = endedFightsCnt == this.fights.size;
-		if( (performance.now() - this.gameStartTS) > suspendLimitMS && (allFightsEnded) ) {
+		if( /*(performance.now() - this.started) > suspendLimitMS && */(allFightsEnded) ) {
 			console.log(`Game autosuspended after ${suspendLimit} seconds`);
 			this.stopGame();
 			return true;
