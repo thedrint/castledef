@@ -7,12 +7,18 @@ export default class Game {
 	constructor () {
 		this.gameStarted = false;
 		this.gameStartTS = 0;
+		this.frameRate = 1; // 60 fps
+		this.frameRateMs = 1000/this.frameRate;
 	}
 
 	startGame () {
 		console.log(`Start the Game!`);
 		this.gameStarted = true;
-		this.gameStartTS = performance.now();
+		let now = performance.now();
+		this.dt = 0;
+		this.gameStartTS = now;
+		this.lastUpdateTS = now;
+		this.past = now;
 		this.nextFrame();
 	}
 
@@ -20,7 +26,7 @@ export default class Game {
 		this.gameStarted = false;
 	}
 
-	nextFrame () {
+	nextFrame (now) {
 		if( !this.gameStarted ) {
 			return;
 		}
@@ -29,17 +35,30 @@ export default class Game {
 			return;
 		}
 
+		this.dt = now - this.past;
+		// console.log(this.dt);
+		this.past = now;
+
+		this.elapsedTime = now - this.lastUpdateTS;
+		if( this.elapsedTime >= this.frameRateMs ) {
+			this.lastUpdateTS = now;
+			this.update();
+			this.render();
+		}
+
 		requestAnimationFrame(this.nextFrame.bind(this));
-		this.render();
+	}
+
+	update () {
+		this.battleFrame();
 	}
 
 	render () {
 		// console.log(performance.now());
-		this.battleFrame();
 	}
 
 	autoSuspendGame () {
-		let suspendLimit = 2;
+		let suspendLimit = 20;
 		let suspendLimitMS = suspendLimit * 1000;
 		if( (performance.now() - this.gameStartTS) > suspendLimitMS && (!this.battleEnded) ) {
 			console.log(`Game autosuspended after ${suspendLimit} seconds`);
