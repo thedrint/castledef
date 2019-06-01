@@ -27,6 +27,9 @@ export default class Fight {
 			this.fighters.forEach( (fighter, again, enemies) => {
 				if( fighter.isDied() )
 					return;
+
+				if( !fighter.isReady() )
+					return;
 				// cycle through all enemies in a fight and hit their
 				enemies.forEach( enemy => {
 					// pass itself

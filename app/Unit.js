@@ -5,6 +5,8 @@ export default class Unit {
 	constructor (settings = {}, attrs = {}) {
 		this.initSettings(settings);
 		this.initAttrs(attrs);
+
+		this.frameCnt = 0;
 	}
 
 	initSettings (settings) {
@@ -48,6 +50,23 @@ export default class Unit {
 		}
 	}
 
+	update () {
+		this.updateActionFrameCounter();
+	}
+
+	updateActionFrameCounter () {
+		this.frameCnt++;
+		this.ready = false;
+		if( this.frameCnt >= this.actionFrame() ) {
+			this.ready = true;
+			this.frameCnt = 0;
+		}
+	}
+
+	isReady () {
+		return this.ready;
+	}
+
 	hitHp (target) {
 		let damage = this.calcHpDamage() - this.calcHpDefend();
 		target.attrs.hp -= damage;
@@ -83,4 +102,8 @@ export default class Unit {
 		return defend;
 	}
 
+	actionFrame () {
+		let aof = 100/this.attrs.speed;// action on frame, how many frames unit must skip to do next action
+		return aof;
+	}
 }

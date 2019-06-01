@@ -12,20 +12,26 @@ export default class Game {
 	}
 
 	initObjects () {
+		this.fighters = new Set();
 		this.fights = new Set();
 	}
 
 	initFrame () {
 		this.started = false;
-		this.frameRate = 1; // 60 fps would be great
+		this.frameRate = 60; // 60 fps would be great
 		this.frameRateMs = 1000/this.frameRate;
+		this.frameCnt = 0;
 	}
 
 	initTestFight () {
 		// for test only
 		let BadGuy = new Unit({title:`Bad Guy`}, {lvl:10, attack:5});
 		let JohnWick = new Hero({title:`John Wick`}, {lvl:10, attack:10});
-		let BigLebowsky = new Hero({title:`Big Lebowsky`}, {lvl:20, attack:10});
+		let BigLebowsky = new Hero({title:`Big Lebowsky`}, {lvl:20, attack:10, speed:5});
+		this.fighters.add(BadGuy)
+			.add(JohnWick)
+			.add(BigLebowsky)
+		;
 		let testFight = new Fight(BadGuy, JohnWick, BigLebowsky);
 		testFight.connectGame(this);
 		// console.log(testFight);
@@ -62,6 +68,7 @@ export default class Game {
 
 		let elapsed = now - this.updated;
 		if( elapsed >= this.frameRateMs ) {
+			this.frameCnt++;
 			this.updated = now;
 			this.update();
 			this.render();
@@ -75,10 +82,9 @@ export default class Game {
 	}
 
 	updateObjects () {
+		this.fighters.forEach( fighter => fighter.update() );
 		// Update fights
-		this.fights.forEach( fight => {
-			fight.update();
-		});
+		this.fights.forEach( fight => fight.update() );
 	}
 
 	render () {
