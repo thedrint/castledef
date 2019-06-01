@@ -51,6 +51,7 @@ export default class Unit {
 	hitHp (target) {
 		let damage = this.calcHpDamage() - this.calcHpDefend();
 		target.attrs.hp -= damage;
+		console.log(`${this.title} hits ${target.title} with ${damage} damage`);
 		if( target.isDied() ) {
 			//TODO: Event - Target unit dies
 		}

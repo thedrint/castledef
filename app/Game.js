@@ -1,14 +1,35 @@
 
 import Unit from './Unit.js';
 import Hero from './Hero.js';
+import Fight from './Fight.js';
 
 export default class Game {
 
 	constructor () {
+
+		this.initObjects();
+		this.initFrame();
+	}
+
+	initObjects () {
+		this.fights = new Set();
+	}
+
+	initFrame () {
 		this.gameStarted = false;
 		this.gameStartTS = 0;
-		this.frameRate = 1; // 60 fps
+		this.frameRate = 1; // 60 fps would be great
 		this.frameRateMs = 1000/this.frameRate;
+	}
+
+	initTestFight () {
+		// for test only
+		let BadGuy = new Unit({title:`Bad Guy`}, {lvl:10, attack:5});
+		let JohnWick = new Hero({title:`John Wick`}, {lvl:10, attack:10});
+		let testFight = new Fight(BadGuy, JohnWick);
+		testFight.connect(this);
+		console.log(testFight);
+		this.fights.add(testFight)		
 	}
 
 	startGame () {
@@ -19,14 +40,16 @@ export default class Game {
 		this.gameStartTS = now;
 		this.lastUpdateTS = now;
 		this.past = now;
-		this.nextFrame();
+
+		this.initTestFight();
+		this.frame();
 	}
 
 	stopGame () {
 		this.gameStarted = false;
 	}
 
-	nextFrame (now) {
+	frame (now) {
 		if( !this.gameStarted ) {
 			return;
 		}
@@ -46,11 +69,18 @@ export default class Game {
 			this.render();
 		}
 
-		requestAnimationFrame(this.nextFrame.bind(this));
+		requestAnimationFrame(this.frame.bind(this));
 	}
 
 	update () {
-		this.battleFrame();
+		this.updateObjects();
+	}
+
+	updateObjects () {
+		// Update fights
+		this.fights.forEach( fight => {
+			fight.update();
+		});
 	}
 
 	render () {
@@ -60,37 +90,19 @@ export default class Game {
 	autoSuspendGame () {
 		let suspendLimit = 20;
 		let suspendLimitMS = suspendLimit * 1000;
-		if( (performance.now() - this.gameStartTS) > suspendLimitMS && (!this.battleEnded) ) {
+
+		let endedFightsCnt = 0;
+		this.fights.forEach( fight => {
+			if( fight.ended )
+				endedFightsCnt++;
+		});
+		let allFightsEnded = endedFightsCnt == this.fights.size;
+		if( (performance.now() - this.gameStartTS) > suspendLimitMS && (allFightsEnded) ) {
 			console.log(`Game autosuspended after ${suspendLimit} seconds`);
 			this.stopGame();
 			return true;
 		}
 
 		return false;
-	}
-
-	battleFrame () {
-		if( !this.battleStarted ) {
-			this.battleStarted = true;
-			this.Enemy = new Unit({title:`Bad Guy`}, {lvl:10, attack:5});
-			this.Hero = new Hero({title:`John Wick`}, {lvl:10, attack:10});
-			console.log(`Start battle`);
-			console.log(this.Enemy, this.Hero);
-			return;
-		}
-
-		if( !this.battleEnded ) {
-			// Every frame units hits each other
-			this.Hero.hitHp(this.Enemy);
-			this.Enemy.hitHp(this.Hero);
-			console.log(`${this.Enemy.title} has ${this.Enemy.attrs.hp}, ${this.Hero.title} has ${this.Hero.attrs.hp}`);
-			if( this.Hero.isDied() || this.Enemy.isDied() ) {
-				this.battleEnded = true;
-				let winner = this.Hero.isDied() ? `${this.Enemy.title}` : `${this.Hero.title}`;
-				console.log(`Battle is over, winner is ${winner}`);
-				this.stopGame();
-			}
-		}
-		
 	}
 }
