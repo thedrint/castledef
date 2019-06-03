@@ -2,7 +2,7 @@
 import Konva from 'konva';
 
 export default class Engine {
-	constructor (containerId = 'Game', width = 600, height = 480) {
+	constructor (containerId = 'Game', width = window.innerWidth, height = window.innerHeight) {
 		this.stage = new Konva.Stage({
 			container: containerId,
 			width: width,
@@ -11,16 +11,16 @@ export default class Engine {
 
 		let layer = new Konva.Layer();
 
-		let circle = new Konva.Circle({
-			x: stage.width() / 2,
-			y: stage.height() / 2,
-			radius: 70,
+		let unit = new Konva.Circle({
+			x: this.stage.width() / 2,
+			y: this.stage.height() / 2,
+			radius: 16,
 			fill: 'red',
 			stroke: 'black',
-			strokeWidth: 4
+			strokeWidth: 1
 		});
 
-		layer.add(circle);
+		layer.add(unit);
 		this.stage.add(layer);
 
 		layer.draw();

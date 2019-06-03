@@ -5,6 +5,9 @@
   "description": "Simple 2d javascript game about defend and grow your castle",
   "main": "./src/index.js",
   "dependencies": {
+    "i18next": "^16.0.0",
+    "i18next-browser-languagedetector": "^3.0.1",
+    "i18next-xhr-backend": "^3.0.0",
     "konva": "^3.3.1"
   },
   "devDependencies": {
@@ -22,8 +25,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack --config webpack.dev.js",
-    "prod": "webpack --config webpack.prod.js",
-    "start": "webpack-dev-server --open --config webpack.dev.js"
+    "prod": "webpack --config webpack.prod.js"
   },
   "repository": {
     "type": "git",

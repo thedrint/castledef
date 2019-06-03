@@ -9,6 +9,8 @@ export default class Unit {
 		this.initEquipment(equipment);
 
 		this.frameCnt = 0;
+
+		this.model = undefined;
 	}
 
 	initSettings (settings) {
@@ -91,6 +93,10 @@ export default class Unit {
 			arms    ,
 		};
 		Object.assign(this.eq, unitEquipment);
+	}
+
+	initModel (model) {
+		
 	}
 
 	update () {
