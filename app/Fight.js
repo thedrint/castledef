@@ -25,23 +25,17 @@ export default class Fight {
 		if( !this.ended ) {
 			// Every frame check that units can hits each other
 			this.fighters.forEach( (fighter, again, enemies) => {
-				if( fighter.isDied() )
+				if( !fighter.isReady() || fighter.isDied() )
 					return;
 
-				if( !fighter.isReady() )
-					return;
 				// cycle through all enemies in a fight and hit their
 				enemies.forEach( enemy => {
-					// pass itself
-					if( enemy == fighter )
-						return;
-					if( enemy.isDied() )
+					// pass itself, deads and other...
+					if( enemy == fighter || enemy.isDied() )
 						return;
 
 					fighter.hitHp(enemy);
-					if( enemy.isDied() ) {
-						console.log(`${fighter.title} killed ${enemy.title}`);
-					}
+					this.game.updateLastAction();
 				})
 			});
 			if( this.isEnded() ) {

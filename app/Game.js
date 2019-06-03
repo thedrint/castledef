@@ -17,7 +17,8 @@ export default class Game {
 	}
 
 	initFrame () {
-		this.started = false;
+		this.started = undefined;
+		this.stopped = undefined;
 		this.frameRate = 60; // 60 fps would be great
 		this.frameRateMs = 1000/this.frameRate;
 		this.frameCnt = 0;
@@ -50,12 +51,13 @@ export default class Game {
 		this.frame();
 	}
 
-	stopGame () {
-		this.started = false;
+	stopGame (reasonMessage) {
+		this.stopped = performance.now();
+		console.log(reasonMessage);
 	}
 
 	frame (now) {
-		if( !this.started ) {
+		if( !this.started || this.stopped ) {
 			return;
 		}
 
@@ -69,6 +71,7 @@ export default class Game {
 		let elapsed = now - this.updated;
 		if( elapsed >= this.frameRateMs ) {
 			this.frameCnt++;
+			console.log(this.frameCnt);
 			this.updated = now;
 			this.update();
 			this.render();
@@ -82,6 +85,7 @@ export default class Game {
 	}
 
 	updateObjects () {
+		// Update fighters
 		this.fighters.forEach( fighter => fighter.update() );
 		// Update fights
 		this.fights.forEach( fight => fight.update() );
@@ -91,22 +95,31 @@ export default class Game {
 		// console.log(performance.now());
 	}
 
-	autoSuspendGame () {
-		let suspendLimit = 20;
-		let suspendLimitMS = suspendLimit * 1000;
+	updateLastAction () {
+		this.lastActionFrame = this.frameCnt;
+	}
 
+	autoSuspendGame () {
+		let suspendFramesThreshold = this.frameRate+20;
+		if( this.frameCnt - this.lastActionFrame >= suspendFramesThreshold ) {
+			this.stopGame(`Game autosuspended`);
+			return true;
+		}
+
+		/*
 		let endedFightsCnt = 0;
 		this.fights.forEach( fight => {
 			if( fight.ended )
 				endedFightsCnt++;
 		});
 		let allFightsEnded = endedFightsCnt == this.fights.size;
-		if( /*(performance.now() - this.started) > suspendLimitMS && */(allFightsEnded) ) {
+		if( allFightsEnded ) {
 			console.log(`Game autosuspended after ${suspendLimit} seconds`);
 			this.stopGame();
 			return true;
 		}
-
+		*/
+	
 		return false;
 	}
 }

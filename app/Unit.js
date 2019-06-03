@@ -2,22 +2,25 @@
 
 export default class Unit {
 
-	constructor (settings = {}, attrs = {}) {
+	constructor (settings = {}, attrs = {}, skills = {}, equipment = {}) {
 		this.initSettings(settings);
 		this.initAttrs(attrs);
+		this.initSkills(skills);
+		this.initEquipment(equipment);
 
 		this.frameCnt = 0;
 	}
 
 	initSettings (settings) {
 		let {
-			title = `John Doe`,
-			type  = `Base`,
-			immortal  = false,
+			title    = `John Doe`,
+			type     = `Base`,
+			immortal = false,
 		} = settings;
 		let unitSettings = {
-			title,
-			type,
+			title    ,
+			type     ,
+			immortal ,
 		};
 		Object.assign(this, unitSettings);
 	}
@@ -33,12 +36,12 @@ export default class Unit {
 			speed  = 10,
 		} = attrs;
 		let unitAttrs = {
-			lvl,
-			hp,
-			mp,
-			attack,
-			defend,
-			speed,
+			lvl    ,
+			hp     ,
+			mp     ,
+			attack ,
+			defend ,
+			speed  ,
 		};
 		Object.assign(this.attrs, unitAttrs);
 
@@ -48,6 +51,46 @@ export default class Unit {
 		if( this.attrs.mp == undefined ) {
 			this.attrs.mp = this.getFullMp();
 		}
+	}
+
+	initSkills (skills) {
+		this.skills = {};
+		let {
+			strength  = 0,
+			agility   = 0,
+			intellect = 0,
+		} = skills;
+		let unitSkills = {
+			strength  ,
+			agility   ,
+			intellect ,
+		};
+		Object.assign(this.skills, unitSkills);
+	}
+
+	initEquipment (equipment) {
+		this.eq = {};
+		let {
+			head    = undefined,
+			hands   = undefined,
+			fingers = undefined,
+			foots   = undefined,
+			neck    = undefined,
+			legs    = undefined,
+			body    = undefined,
+			arms    = undefined,
+		} = equipment;
+		let unitEquipment = {
+			head    ,
+			hands   ,
+			fingers ,
+			foots   ,
+			neck    ,
+			legs    ,
+			body    ,
+			arms    ,
+		};
+		Object.assign(this.eq, unitEquipment);
 	}
 
 	update () {
@@ -70,9 +113,10 @@ export default class Unit {
 	hitHp (target) {
 		let damage = this.calcHpDamage() - this.calcHpDefend();
 		target.attrs.hp -= damage;
-		console.log(`${this.title} hits ${target.title} with ${damage} damage`);
+		console.log(`${this.title} hitted ${target.title} with ${damage} damage`);
 		if( target.isDied() ) {
 			//TODO: Event - Target unit dies
+			console.log(`${this.title} killed ${target.title}`);
 		}
 	}
 

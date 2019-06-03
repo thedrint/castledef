@@ -1,0 +1,25 @@
+{
+  "name": "castledef",
+  "version": "1.0.0",
+  "description": "Simple 2d javascript game about defend and grow your castle",
+  "main": "app.js",
+  "dependencies": {
+    "konva": "^3.3.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@bitbucket.org/drint/castledef.git"
+  },
+  "keywords": [
+    "Castle",
+    "Defence",
+    "Strategy"
+  ],
+  "author": "Dr.Int",
+  "license": "ISC",
+  "homepage": "https://bitbucket.org/drint/castledef#readme"
+}
