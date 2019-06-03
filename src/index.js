@@ -1,4 +1,4 @@
 
-import Game from './app/Game.js';
+import Game from './assets/js/Game.js';
 let newGame = new Game();
 newGame.startGame();
