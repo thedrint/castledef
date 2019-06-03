@@ -1,4 +1,5 @@
 
+// import Engine from './Engine.js';
 import Unit from './Unit.js';
 import Hero from './Hero.js';
 import Fight from './Fight.js';
@@ -7,6 +8,7 @@ export default class Game {
 
 	constructor () {
 
+		// this.engine = new Engine();
 		this.initObjects();
 		this.initFrame();
 	}
