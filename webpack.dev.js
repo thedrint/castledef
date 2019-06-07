@@ -29,8 +29,9 @@ module.exports = {
 			{from: './assets/locales', to: './assets/locales', context: './src'},
 		]),
 		new HtmlWebpackPlugin({
-			title: 'Test Application',
-			template: './src/index.html',
+			title: 'CastleDef Testing',
+			// template: './src/index.html',
+			favicon: './src/favicon.ico',
 		}),
 	],
 	module:

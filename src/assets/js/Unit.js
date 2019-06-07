@@ -1,54 +1,63 @@
 
 import Phaser from 'phaser';
+import { gameInternalSettings } from './GameSettings';
 
 export default class Unit extends Phaser.GameObjects.Container {
 
-	constructor (scene, x, y, settings = {}, attrs = {}, skills = {}, equipment = {}) {
+	constructor (
+		settings = {
+			name: `John Doe`, 
+			model: {}, 
+			attrs: {}, 
+			skills: {}, 
+			equipment: {}
+		}, 
+		scene, 
+		x = 0, 
+		y = 0
+	) {
 		super(scene, x, y);
 		scene.add.existing(this);
 		
 		this.initSettings(settings);
-		this.initAttrs(attrs);
-		this.initSkills(skills);
-		this.initEquipment(equipment);
-
-		// this.frameCnt = 0;
-
-		// this.model = undefined;
-
-		this.initModel();
 	}
 
 	initSettings (settings) {
 		let {
 			name     = `John Doe`,
-			immortal = false,
 		} = settings;
 		let unitSettings = {
 			name     ,
-			immortal ,
 		};
 		Object.assign(this, unitSettings);
+
+		this.initAttrs(settings.attrs);
+		this.initSkills(settings.skills);
+		this.initEquipment(settings.equipment);
+		this.initModel(settings.model);
 	}
 
-	initAttrs (attrs) {
+	initAttrs (attrs = {}) {
 		this.attrs = {};
 		let {
-			lvl    = 0,
-			hp     = undefined,
-			mp     = undefined,
-			attack = 0,
-			defend = 0,
-			speed  = 10,
+			immortal = false,
+			lvl      = 0,
+			hp       = undefined,
+			mp       = undefined,
+			attack   = 0,
+			defend   = 0,
+			speed    = 1,
 		} = attrs;
 		let unitAttrs = {
-			lvl    ,
-			hp     ,
-			mp     ,
-			attack ,
-			defend ,
-			speed  ,
+			immortal ,
+			lvl      ,
+			hp       ,
+			mp       ,
+			attack   ,
+			defend   ,
+			speed    ,
 		};
+
 		Object.assign(this.attrs, unitAttrs);
 
 		if( this.attrs.hp == undefined ) {
@@ -59,7 +68,7 @@ export default class Unit extends Phaser.GameObjects.Container {
 		}
 	}
 
-	initSkills (skills) {
+	initSkills (skills = {}) {
 		this.skills = {};
 		let {
 			strength  = 0,
@@ -74,7 +83,7 @@ export default class Unit extends Phaser.GameObjects.Container {
 		Object.assign(this.skills, unitSkills);
 	}
 
-	initEquipment (equipment) {
+	initEquipment (equipment = {}) {
 		this.eq = {};
 		let {
 			head    = undefined,
@@ -101,56 +110,92 @@ export default class Unit extends Phaser.GameObjects.Container {
 
 	initModel (modelParams = {}) {
 		let {
-			size  = 32,
-			color = 0x00ff00,
+			size        = gameInternalSettings.unit.size,
+			armorColor  = 0x00ff00,
+			helmetColor = 0x000000,
+			weaponColor = 0x999999,
+			shieldColor = 0x654321,
 		} = modelParams;
 		let params = {
-			size  , 
-			color ,
+			size        , 
+			armorColor  ,
+			helmetColor ,
+			weaponColor ,
+			shieldColor ,
 		};
 
 		this.setSize(params.size, params.size);
 
-		let body = this.scene.add.ellipse(0, 0, params.size, params.size, params.color);
+		let body = this.scene.add.ellipse(0, 0, params.size, params.size, params.armorColor);
+		body.setName('Body');
 		this.add(body);
 
-		let helmet = this.scene.add.rectangle(0, 0, params.size/8, params.size/8, 0x000000);
+		let helmet = this.scene.add.ellipse(0, 0, params.size/2, params.size/2, params.helmetColor);
+		helmet.setName('Helmet');
 		this.add(helmet);
 
-		let weapon = this.scene.add.line(0, 0, 0, params.size/2, params.size/2, params.size/2, 0x0000ff);
+		let weapon = this.scene.add.line(0, 0, 0, params.size/2, params.size, params.size/2, params.weaponColor);
 		weapon.setOrigin(0);
+		weapon.setName('Weapon');
 		this.add(weapon);
 
-		let shield = this.scene.add.line(params.size/8+1, -params.size/8+1, +1, -params.size/2, params.size/2-1, -1, 0x654321);
+		let shield = this.scene.add.line(params.size/8+1, -params.size/8+1, +1, -params.size/2, params.size/2-1, -1, params.shieldColor);
 		shield.setOrigin(0);
+		shield.setName('Shield');
 		this.add(shield);
 
-		let bounds = this.getBounds();
-		// let render = this.scene.add.graphics();
-		// render.lineStyle(1, 0xff0000);
-		// render.strokeRectShape(bounds);
-		console.log(bounds);
-		console.log(this);
+		// let bounds = this.getBounds();
+		// this.add(boundsHelper);
+		// console.log(bounds);
+		// console.log(this);
 
 		this.mover = this.scene.plugins.get('rexMoveTo').add(this, {
-			speed: 60,
+			speed: this.getSpeed(),
 			rotateToTarget: true,
-		}).on('complete', () => console.log(`Target reached`));
-
-		// this.setAngle(90);
+		}).on('complete', () => {
+			console.log(`Target reached`);
+		});
 	}
 
 	isReady () {
 		return this.ready;
 	}
 
+	updateBoundsHelper () {
+		if( this.boundsHelper ) {
+			this.boundsHelper.destroy();
+		}
+		this.boundsHelper = this.scene.add.graphics();
+
+		let d = this.getWorldTransformMatrix().decomposeMatrix();
+		let bounds = this.getBounds();
+
+		this.boundsHelper.clear();
+		this.boundsHelper.lineStyle(1, 0xff0000, 1);			
+		this.boundsHelper.strokeRect(d.translateX-bounds.width/2, d.translateY-bounds.height/2, bounds.width, bounds.height);
+		// this.boundsHelper.setRotation(d.rotation);
+	}
+
+	weaponPierce () {
+		let weapon = this.getByName('Weapon');
+		let pierceLength = weapon.width;
+		this.scene.tweens.add({
+			targets: weapon,
+			duration: this.getSpeed()*3,
+			ease: 'Linear',
+			yoyo: true,
+			repeat:-1,
+			x: pierceLength,
+		});
+	}
+
 	hitHp (target) {
-		if( target.immortal )
+		if( target.attrs.immortal )
 			return;
 
 		let damage = this.calcHpDamage() - this.calcHpDefend();
 		target.attrs.hp -= damage;
-		console.log(`${this.name} hitted ${target.name} with ${damage} damage`);
+		// console.log(`${this.name} hitted ${target.name} with ${damage} damage`);
 		if( target.isDied() ) {
 			//TODO: Event - Target unit dies
 			console.log(`${target.name} killed!`);
@@ -181,6 +226,12 @@ export default class Unit extends Phaser.GameObjects.Container {
 		//TODO: Make formula better
 		let defend = this.attrs.defend;
 		return defend;
+	}
+
+	getSpeed () {
+		let baseSpeed = 60*this.attrs.speed;
+		let speedMod = baseSpeed*this.skills.agility;
+		return baseSpeed + speedMod;
 	}
 
 	actionFrame () {

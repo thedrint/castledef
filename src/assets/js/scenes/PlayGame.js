@@ -15,23 +15,26 @@ export default class PlayGame extends Scene {
 	}
 
 	create () {
-		let JohnWick = new Hero(this, 128, 128, 
-			{name:`John Wick`, immortal:true}, 
-			{lvl:10, attack:10}
-		);
-		// JohnWick.setAngle(90);
+		let JohnWick = new Hero({name  :`John Wick`, 
+			attrs : {lvl:10, attack:10, immortal:true},
+			model: {armorColor: 0x660066}
+		}, this, 128, 128);
+		// JohnWick.setAngle(45);
+		// console.log(JohnWick.getByName('Weapon'));
+		// console.log(JohnWick.getByName('Weapon').getLocalTransformMatrix());
+		// console.log(JohnWick.getByName('Weapon').getWorldTransformMatrix());
+		JohnWick.weaponPierce();
 
-		let BadGuy = new Unit(this, 480, 128, 
-			{name:`Bad Guy`}, 
-			{lvl:10, attack:5}
-		);
-		// BadGuy.setAngle(-90);
+		let BadGuy = new Unit({name:`Bad Guy`, 
+			attrs: {lvl:10, attack:5},
+		}, this, 480, 128);
 
 		this.fighters.add(JohnWick).add(BadGuy);
 	}
 
 	update (time, delta) {
 		this.fighters.forEach( fighter => {
+			// fighter.updateBoundsHelper();
 			let closest = fighter.getClosestEnemy();
 			// console.log(closest);
 			let fighterBounds = fighter.getBounds();
@@ -44,10 +47,9 @@ export default class PlayGame extends Scene {
 				if( closest.enemy.isDied() ) {
 					this.fighters.delete(closest.enemy);
 					closest.enemy.destroy();
-					let newBadGuy = new Unit(this, Phaser.Math.Between(0, 640), Phaser.Math.Between(0, 480), 
-						{name:`Bad Guy`}, 
-						{lvl:10, attack:5}
-					);
+					let newBadGuy = new Unit({name:`Bad Guy`, 
+						attrs: {lvl:10, attack:5},
+					}, this, Phaser.Math.Between(0, 640), Phaser.Math.Between(0, 480));
 					this.fighters.add(newBadGuy);
 				}
 				// Start a fight
@@ -57,7 +59,10 @@ export default class PlayGame extends Scene {
 			}
 		});
 	}
-
+	/**
+	 * Init internal scene objects
+	 * @return none
+	 */
 	initObjects () {
 		this.fighters = new Set();
 	}

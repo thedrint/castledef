@@ -1,5 +1,6 @@
 
 import Phaser from 'phaser';
+import { gameInternalSettings } from './GameSettings';
 import PlayGame from './scenes/PlayGame';
 import MoveToPlugin from '../../phaser3-rex-plugins/plugins/moveto-plugin';
 
