@@ -1,6 +1,6 @@
 
 import Phaser from 'phaser';
-import { gameInternalSettings } from './GameSettings';
+import { gameInternalSettings, FPSConfig } from './GameSettings';
 
 export default class Unit extends Phaser.GameObjects.Container {
 
@@ -148,7 +148,6 @@ export default class Unit extends Phaser.GameObjects.Container {
 		// this.add(boundsHelper);
 		// console.log(bounds);
 		// console.log(this);
-
 		this.mover = this.scene.plugins.get('rexMoveTo').add(this, {
 			speed: this.getSpeed(),
 			rotateToTarget: true,
@@ -179,9 +178,10 @@ export default class Unit extends Phaser.GameObjects.Container {
 	weaponPierce () {
 		let weapon = this.getByName('Weapon');
 		let pierceLength = weapon.width;
+		console.log(this.getWeaponSpeed());
 		this.scene.tweens.add({
 			targets: weapon,
-			duration: this.getSpeed()*3,
+			duration: pierceLength/this.getWeaponSpeed(),
 			ease: 'Linear',
 			yoyo: true,
 			repeat:-1,
@@ -229,9 +229,14 @@ export default class Unit extends Phaser.GameObjects.Container {
 	}
 
 	getSpeed () {
-		let baseSpeed = 60*this.attrs.speed;
-		let speedMod = baseSpeed*this.skills.agility;
+		let baseSpeed = this.attrs.speed*gameInternalSettings.unit.size;
+		let speedMod = baseSpeed*this.skills.agility/10;
 		return baseSpeed + speedMod;
+	}
+
+	getWeaponSpeed () {
+		let baseSpeed = (this.skills.agility+1)/10/2;
+		return baseSpeed;
 	}
 
 	actionFrame () {

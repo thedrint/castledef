@@ -1,6 +1,6 @@
 
 import Phaser from 'phaser';
-import { gameInternalSettings } from './GameSettings';
+import { gameInternalSettings, FPSConfig } from './GameSettings';
 import PlayGame from './scenes/PlayGame';
 import MoveToPlugin from '../../phaser3-rex-plugins/plugins/moveto-plugin';
 
@@ -13,6 +13,7 @@ const gameConfig = {
 	url: `https://drint.ru`,
 	version: `0.0.1`,
 	backgroundColor: 0xffffff,
+	fps: FPSConfig,
 	plugins: {
 		global: [
 			{
