@@ -1,5 +1,5 @@
 
-import Unit from './Unit.js';
+import Unit from './Unit';
 
 export default class Hero extends Unit {
 

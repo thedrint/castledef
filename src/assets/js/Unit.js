@@ -1,27 +1,31 @@
-// Hello
 
-export default class Unit {
+import Phaser from 'phaser';
 
-	constructor (settings = {}, attrs = {}, skills = {}, equipment = {}) {
+export default class Unit extends Phaser.GameObjects.Container {
+
+	constructor (scene, x, y, settings = {}, attrs = {}, skills = {}, equipment = {}) {
+		super(scene, x, y);
+		scene.add.existing(this);
+		
 		this.initSettings(settings);
 		this.initAttrs(attrs);
 		this.initSkills(skills);
 		this.initEquipment(equipment);
 
-		this.frameCnt = 0;
+		// this.frameCnt = 0;
 
-		this.model = undefined;
+		// this.model = undefined;
+
+		this.initModel();
 	}
 
 	initSettings (settings) {
 		let {
-			title    = `John Doe`,
-			type     = `Base`,
+			name     = `John Doe`,
 			immortal = false,
 		} = settings;
 		let unitSettings = {
-			title    ,
-			type     ,
+			name     ,
 			immortal ,
 		};
 		Object.assign(this, unitSettings);
@@ -95,21 +99,45 @@ export default class Unit {
 		Object.assign(this.eq, unitEquipment);
 	}
 
-	initModel (model) {
-		
-	}
+	initModel (modelParams = {}) {
+		let {
+			size  = 32,
+			color = 0x00ff00,
+		} = modelParams;
+		let params = {
+			size  , 
+			color ,
+		};
 
-	update () {
-		this.updateActionFrameCounter();
-	}
+		this.setSize(params.size, params.size);
 
-	updateActionFrameCounter () {
-		this.frameCnt++;
-		this.ready = false;
-		if( this.frameCnt >= this.actionFrame() ) {
-			this.ready = true;
-			this.frameCnt = 0;
-		}
+		let body = this.scene.add.ellipse(0, 0, params.size, params.size, params.color);
+		this.add(body);
+
+		let helmet = this.scene.add.rectangle(0, 0, params.size/8, params.size/8, 0x000000);
+		this.add(helmet);
+
+		let weapon = this.scene.add.line(0, 0, 0, params.size/2, params.size/2, params.size/2, 0x0000ff);
+		weapon.setOrigin(0);
+		this.add(weapon);
+
+		let shield = this.scene.add.line(params.size/8+1, -params.size/8+1, +1, -params.size/2, params.size/2-1, -1, 0x654321);
+		shield.setOrigin(0);
+		this.add(shield);
+
+		let bounds = this.getBounds();
+		// let render = this.scene.add.graphics();
+		// render.lineStyle(1, 0xff0000);
+		// render.strokeRectShape(bounds);
+		console.log(bounds);
+		console.log(this);
+
+		this.mover = this.scene.plugins.get('rexMoveTo').add(this, {
+			speed: 60,
+			rotateToTarget: true,
+		}).on('complete', () => console.log(`Target reached`));
+
+		// this.setAngle(90);
 	}
 
 	isReady () {
@@ -117,12 +145,15 @@ export default class Unit {
 	}
 
 	hitHp (target) {
+		if( target.immortal )
+			return;
+
 		let damage = this.calcHpDamage() - this.calcHpDefend();
 		target.attrs.hp -= damage;
-		console.log(`${this.title} hitted ${target.title} with ${damage} damage`);
+		console.log(`${this.name} hitted ${target.name} with ${damage} damage`);
 		if( target.isDied() ) {
 			//TODO: Event - Target unit dies
-			console.log(`${this.title} killed ${target.title}`);
+			console.log(`${target.name} killed!`);
 		}
 	}
 
@@ -155,5 +186,22 @@ export default class Unit {
 	actionFrame () {
 		let aof = 100/this.attrs.speed;// action on frame, how many frames unit must skip to do next action
 		return aof;
+	}
+
+	getClosestEnemy () {
+		let closestEnemy = undefined;
+		for( let enemy of this.scene.fighters ) {
+			if( enemy == this || enemy.isDied() )
+				continue;
+
+			let vector = new Phaser.Math.Vector2(enemy.x - this.x, enemy.y - this.y);
+			let distance = Phaser.Math.Distance.Between(this.x, this.y, enemy.x, enemy.y);
+			if( !closestEnemy )
+				closestEnemy = {enemy, distance, vector};
+			if( closestEnemy.distance > distance )
+				closestEnemy = {enemy, distance, vector};
+		}
+
+		return closestEnemy;
 	}
 }
