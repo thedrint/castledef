@@ -1,6 +1,8 @@
 
 import Phaser from 'phaser';
 import { gameInternalSettings, FPSConfig } from './GameSettings';
+import Weapon from './Weapon';
+import Shield from './Shield';
 
 export default class Unit extends Phaser.GameObjects.Container {
 
@@ -124,8 +126,7 @@ export default class Unit extends Phaser.GameObjects.Container {
 			shieldColor ,
 		};
 
-		this.setSize(params.size, params.size);
-
+		// this.setSize(params.size, params.size);
 		let body = this.scene.add.ellipse(0, 0, params.size, params.size, params.armorColor);
 		body.setName('Body');
 		this.add(body);
@@ -134,20 +135,26 @@ export default class Unit extends Phaser.GameObjects.Container {
 		helmet.setName('Helmet');
 		this.add(helmet);
 
-		let weapon = this.scene.add.line(0, 0, 0, params.size/2, params.size, params.size/2, params.weaponColor);
-		weapon.setOrigin(0);
-		weapon.setName('Weapon');
+		let weapon = new Weapon({model:{color:params.weaponColor}}, this.scene, 0, params.size/2);
+		// let weapon = this.scene.add.line(0, 0, 0, params.size/2, params.size, params.size/2, params.weaponColor);
+		// weapon.setOrigin(0);
+		// weapon.setName('Weapon');
 		this.add(weapon);
 
-		let shield = this.scene.add.line(params.size/8+1, -params.size/8+1, +1, -params.size/2, params.size/2-1, -1, params.shieldColor);
-		shield.setOrigin(0);
-		shield.setName('Shield');
+		let bodyRadius = body.geom.width/2;
+		let shieldAngle = 45;
+		let shieldDot = {
+			x: bodyRadius*Math.sin(shieldAngle),
+			y: -bodyRadius*Math.cos(shieldAngle),
+		}
+		let shield = new Shield({model:{color:params.shieldColor}}, this.scene, shieldDot.x, shieldDot.y);
+		// let shield = this.scene.add.line(params.size/8+1, -params.size/8+1, +1, -params.size/2, params.size/2-1, -1, params.shieldColor);
+		// shield.setName('Shield');
+		shield.setAngle(shieldAngle);
 		this.add(shield);
 
-		// let bounds = this.getBounds();
-		// this.add(boundsHelper);
-		// console.log(bounds);
-		// console.log(this);
+		// console.log(`${this.name} bounds:`, this.getBounds());
+
 		this.mover = this.scene.plugins.get('rexMoveTo').add(this, {
 			speed: this.getSpeed(),
 			rotateToTarget: true,
@@ -160,25 +167,37 @@ export default class Unit extends Phaser.GameObjects.Container {
 		return this.ready;
 	}
 
-	updateBoundsHelper () {
-		if( this.boundsHelper ) {
-			this.boundsHelper.destroy();
+	updateBoundsHelper (gameObject, color = 0xff0000) {
+		if( gameObject.boundsHelper ) {
+			gameObject.boundsHelper.destroy();
 		}
-		this.boundsHelper = this.scene.add.graphics();
+		gameObject.boundsHelper = gameObject.scene.add.graphics();
 
-		let d = this.getWorldTransformMatrix().decomposeMatrix();
-		let bounds = this.getBounds();
-
-		this.boundsHelper.clear();
-		this.boundsHelper.lineStyle(1, 0xff0000, 1);			
-		this.boundsHelper.strokeRect(d.translateX-bounds.width/2, d.translateY-bounds.height/2, bounds.width, bounds.height);
+		// let d = gameObject.getWorldTransformMatrix().decomposeMatrix();
+		
+		let bounds = gameObject.getBounds();
+		console.log(`${gameObject.name} bounds:`, bounds);
+		color = 0xff0000;
+		gameObject.boundsHelper.clear();
+		gameObject.boundsHelper.lineStyle(1, color, 1);
+		gameObject.boundsHelper.strokeRectShape(bounds);
+		
+		// gameObject.boundsHelper.strokeRect(d.translateX-bounds.width/2, d.translateY-bounds.height/2, bounds.width, bounds.height);
+		// console.log(gameObject.boundsHelper);
 		// this.boundsHelper.setRotation(d.rotation);
+	}
+
+	getWeapon () {
+		return this.getByName('Weapon');
+	}
+
+	getShield () {
+		return this.getByName('Shield');
 	}
 
 	weaponPierce () {
 		let weapon = this.getByName('Weapon');
 		let pierceLength = weapon.width;
-		console.log(this.getWeaponSpeed());
 		this.scene.tweens.add({
 			targets: weapon,
 			duration: pierceLength/this.getWeaponSpeed(),

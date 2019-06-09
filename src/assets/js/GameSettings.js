@@ -6,6 +6,6 @@ export const FPSConfig = {
 
 export const gameInternalSettings = {
 	unit: {
-		size: 32,
+		size: 64,
 	},
 };
