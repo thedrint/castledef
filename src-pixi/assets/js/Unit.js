@@ -1,10 +1,10 @@
 
-import Phaser from 'phaser';
+import * as PIXI from 'pixi.js';
 import { gameInternalSettings, FPSConfig } from './GameSettings';
 import Weapon from './Weapon';
 import Shield from './Shield';
 
-export default class Unit extends Phaser.GameObjects.Container {
+export default class Unit extends PIXI.Container {
 
 	constructor (
 		settings = {
@@ -18,7 +18,7 @@ export default class Unit extends Phaser.GameObjects.Container {
 		x = 0, 
 		y = 0
 	) {
-		super(scene, x, y);
+		super();
 		scene.add.existing(this);
 		
 		this.initSettings(settings);

@@ -1,12 +1,12 @@
 
-import { Scene } from 'phaser';
+import Scene from './../Scene';
 import Unit from './../Unit';
 import Hero from './../Hero';
 
-export default class PlayGame extends Scene {
+export default class MainScene extends Scene {
 
-	constructor () {
-		super("PlayGame");
+	constructor (options) {
+		super(options);
 		this.initObjects();
 	}
 
