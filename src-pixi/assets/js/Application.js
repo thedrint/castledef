@@ -17,8 +17,8 @@ export default class Application extends PIXI.Application {
 
 		let knight = PIXI.Sprite.from(KnightImage);
 		knight.anchor.set(0.5);
-		knight.x = app.screen.width / 2;
-		knight.y = app.screen.height / 2;
+		knight.x = this.screen.width / 2;
+		knight.y = this.screen.height / 2;
 
 		this.stage.addChild(knight);
 	}
