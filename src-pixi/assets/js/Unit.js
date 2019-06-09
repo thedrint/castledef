@@ -154,13 +154,6 @@ export default class Unit extends Phaser.GameObjects.Container {
 		this.add(shield);
 
 		// console.log(`${this.name} bounds:`, this.getBounds());
-
-		this.mover = this.scene.plugins.get('rexMoveTo').add(this, {
-			speed: this.getSpeed(),
-			rotateToTarget: true,
-		}).on('complete', () => {
-			console.log(`Target reached`);
-		});
 	}
 
 	isReady () {

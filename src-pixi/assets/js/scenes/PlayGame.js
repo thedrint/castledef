@@ -80,8 +80,6 @@ export default class PlayGame extends Scene {
 		if( isInterects ) {
 			console.log(checkIntersects);
 			// console.log('Clash!');
-			if( fighter.mover.isRunning )
-				fighter.mover.stop();
 			fighter.hitHp(enemy);
 			if( enemy.isDied() ) {
 				this.fighters.delete(enemy);
@@ -94,7 +92,6 @@ export default class PlayGame extends Scene {
 			// Start a fight
 		}
 		else {
-			fighter.mover.moveTo(closest.enemy.x, closest.enemy.y);
 		}
 
 	}

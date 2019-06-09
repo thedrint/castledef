@@ -28,8 +28,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack --config webpack.dev.js",
+    "pixibuild": "webpack --config webpack.dev-pixi.js",
     "prod": "webpack --config webpack.prod.js",
-    "start": "webpack-dev-server --config webpack.dev.js --open"
+    "start": "webpack-dev-server --config webpack.dev.js --open",
+    "pixistart": "webpack-dev-server --config webpack.dev-pixi.js --open"
   },
   "repository": {
     "type": "git",

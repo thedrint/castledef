@@ -1,4 +1,4 @@
 *.sublime-*
 /node_modules
-/dev
-/public
+/dev*
+/public*
