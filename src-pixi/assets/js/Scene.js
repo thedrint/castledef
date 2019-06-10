@@ -1,15 +1,19 @@
 
 import * as PIXI from 'pixi.js';
 
-export default class MainScene extends PIXI.Container {
+export default class Scene extends PIXI.Container {
 
-	constructor (options) {
-		// super(options);
+	constructor (name, options = {}) {
+		super();
+		this.app = undefined;
+		this.name = name;
 	}
 
 	preload () {}
 
 	create () {}
 
-	update (time, delta) {}
+	update () {
+		console.log('Updating...');
+	}
 }

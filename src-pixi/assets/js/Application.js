@@ -1,26 +1,40 @@
 
 import * as PIXI from 'pixi.js';
 import { FPS } from './Settings';
+import SceneManager from './SceneManager';
+import Scene from './Scene';
+import MainScene from './scenes/MainScene';
 
-// load sprites
-import KnightImage from './../img/knight.png';
 
 export default class Application extends PIXI.Application {
 
 	constructor (options) {
 		super(options);
 		document.body.appendChild(this.view);
+		let scenes = new SceneManager(this);
+		this.stage = scenes;
 		this.stop();
 	}
 
 	init () {
+		this.initScenes();
 
-		let knight = PIXI.Sprite.from(KnightImage);
-		knight.anchor.set(0.5);
-		knight.x = this.screen.width / 2;
-		knight.y = this.screen.height / 2;
+		this.ticker.add(() => { this.stage.getCurrentScene().update(); });
+	}
 
-		this.stage.addChild(knight);
+	initScenes () {
+		let scene = new MainScene("Main");
+		this.stage.add(scene);
+		scene.x= 0;
+		scene.y= 0;
+		scene.preload();
+		scene.create();
+
+		// This is only example
+		let emptyScene = new Scene("Empty");
+		this.stage.add(emptyScene);
+		emptyScene.preload();
+		emptyScene.create();
 	}
 
 }

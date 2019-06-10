@@ -1,6 +1,6 @@
 
 import * as PIXI from 'pixi.js';
-import { gameInternalSettings, FPSConfig } from './GameSettings';
+import { GameSettings, FPS } from './Settings';
 import Weapon from './Weapon';
 import Shield from './Shield';
 
