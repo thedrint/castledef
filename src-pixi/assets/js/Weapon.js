@@ -1,71 +1,71 @@
 
-import Phaser from 'phaser';
-import { gameInternalSettings } from './GameSettings';
+import * as PIXI from 'pixi.js';
+import * as TWEEN from 'es6-tween';
 
-export default class Weapon extends Phaser.GameObjects.Container {
+import { GameSettings, FPS, Defaults } from './Settings';
+import Utils from './Utils';
+import Scene from './Scene';
 
-	constructor (settings = {name: 'Weapon', model}, scene, x = 0, y = 0) {
-		super(scene, x, y);
-		scene.add.existing(this);
-		this.initSettings(settings);
-	}
+export default class Weapon extends PIXI.Graphics {
 
-	initSettings(settings = {name: 'Weapon', model}) {
-		let {
-			name     = `Weapon`,
+	constructor (settings = {
+		name: Defaults.weapon.name, 
+		attrs: Defaults.weapon.attrs, 
+		model: Defaults.weapon.model
+	}, x = 0, y = 0) {
+
+		super();
+
+		let { 
+			name = Defaults.weapon.name, 
+			attrs = Defaults.weapon.attrs, 
+			model = Defaults.weapon.model 
 		} = settings;
-		let unitSettings = {
-			name     ,
-		};
-		Object.assign(this, unitSettings);
+		this.name = name;
 
-		this.initModel(settings.model);
+		this.attrs = Utils.cleanOptionsObject(settings, Defaults.weapon.attrs);
+
+		this.initModel(model);
 	}
 
-	initModel (modelParams = {size:1, color}) {
-		let {
-			size  = 1,
-			color = 0x999999,
-		} = modelParams;
-		let params = {
-			size  , 
-			color ,
-		};
+	initModel (model = Defaults.weapon.model) {
+		let params = Utils.cleanOptionsObject(model, Defaults.weapon.model);
 
-		let bladeLength = params.size * gameInternalSettings.unit.size;
+		let bladeLength = params.size * GameSettings.unit.size;
+		let bladeWidth = 3;//TODO: Replace magic number with setting or formula
 
-		this.setSize(bladeLength, 3);
+		let guardWidth = bladeLength * 0.1;
+		let guardDepth = 1;
 
+		let models = [];
+		//TODO: Ha-ha, rectangled blade like from orcs
+		let blade = Scene.createShape(new PIXI.Rectangle(0, 0, bladeLength, bladeWidth), params.color);
+		blade.name = `Blade`;
+		models.push(blade);
+		// let guard = Scene.createShape(new PIXI.Rectangle(0, 0, guardWidth, guardDepth), params.color);
+		// guard.name = `Guard`;
+		// model.push(guard);
 
-		let blade = this.scene.add.line(0, 0, 0, 0, bladeLength, 0, params.color);
-		blade.setOrigin(0);
-		blade.setName('Blade');
-		this.add(blade);
-
-		// console.log(`Weapon bounds:`, this.getBounds());
+		this.addChild(...models);
 	}
 
 	getBlade () {
-		return this.getByName('Blade');
+		return this.getChildByName('Blade');
 	}
 	getLength () {
 		return this.getBlade().width;
 	}
 
-	updateBoundsHelper (gameObject) {
-		if( gameObject.boundsHelper ) {
-			gameObject.boundsHelper.destroy();
-		}
-		gameObject.boundsHelper = gameObject.scene.add.graphics();
+	pierce () {
+		let pierceLength = this.width;
 
-		let d = gameObject.getWorldTransformMatrix().decomposeMatrix();
-		let bounds = gameObject.getBounds();
-		// console.log(bounds.width, bounds.height);
-
-		gameObject.boundsHelper.clear();
-		gameObject.boundsHelper.lineStyle(1, 0xff0000, 1);			
-		gameObject.boundsHelper.strokeRect(d.translateX-bounds.width/2, d.translateY-bounds.height/2, bounds.width, bounds.height);
-		// this.boundsHelper.setRotation(d.rotation);
+		const tween = new TWEEN.Tween(this)
+			.to({x:pierceLength}, 1000)
+			.repeat(Infinity)
+			.easing(TWEEN.Easing.Linear.None)
+			.yoyo(true)
+			// .on('update', () => console.log(tween))
+			.start()
+		;
 	}
-
 }

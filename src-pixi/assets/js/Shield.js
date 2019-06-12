@@ -1,64 +1,55 @@
 
-import Phaser from 'phaser';
-import { gameInternalSettings } from './GameSettings';
+import * as PIXI from 'pixi.js';
+import { GameSettings, FPS, Defaults } from './Settings';
+import Utils from './Utils';
+import Scene from './Scene';
 
-export default class Shield extends Phaser.GameObjects.Container {
+export default class Shield extends PIXI.Graphics {
 
-	constructor (settings = {name, defend, model}, scene, x = 0, y = 0) {
-		super(scene, x, y);
-		scene.add.existing(this);
-		this.initSettings(settings);
-	}
+	constructor (settings = {
+		name  : Defaults.shield.name, 
+		attrs : Defaults.shield.attrs, 
+		model : Defaults.shield.model
+	}, x = 0, y = 0) {
 
-	initSettings(settings = {name, defend, model}) {
-		let {
-			name     = `Shield`,
-			defend   = 1,
+		super();
+
+		let { 
+			name = Defaults.shield.name, 
+			attrs = Defaults.shield.attrs, 
+			model = Defaults.shield.model 
 		} = settings;
-		let unitSettings = {
-			name     ,
-			defend   ,
-		};
-		Object.assign(this, unitSettings);
+		this.name = name;
 
-		this.initModel(settings.model);
+		this.attrs = Utils.cleanOptionsObject(attrs, Defaults.shield.attrs);
+
+		this.initModel(model);
 	}
 
-	initModel (modelParams = {size:1, color}) {
-		let {
-			size  = 1,
-			color = 0x654321,
-		} = modelParams;
-		let params = {
-			size  , 
-			color ,
-		};
+	initModel (model = Defaults.shield.model) {
+		let params = Utils.cleanOptionsObject(model, Defaults.shield.model);
 
-		let plateLength = params.size * gameInternalSettings.unit.size;
+		let plateWidth = params.size * GameSettings.unit.size;
+		let plateHeight = 3;//TODO: Replace magic number with setting or formula
 
-		this.setSize(plateLength, 3);
-
-
-		let plate = this.scene.add.line(0, 0, 0, 0, plateLength, 0, params.color);
-		plate.setLineWidth(3);
-		plate.setOrigin(0.5);
-		plate.setName('Plate');
-		this.add(plate);
-
-		// let umbo = this.scene.add.arc(0, 0, 0, 0, shieldLength, 0, params.color);
+		let models = [];
+		let plate = Scene.createShape(new PIXI.Rectangle(0, 0, plateWidth, plateHeight), params.color);
+		plate.pivot.x = 0.5 * plate.width;
+		plate.pivot.y = 0.5 * plate.height;
+		plate.name = `Plate`;
+		models.push(plate);
+		// let umbo = Scene.CreateShape(0, 0, 0, 0, shieldLength, 0, params.color);
 		// umbo.setOrigin(0.5);
-		// umbo.setName('Umbo');
-		// this.add(umbo);
+		// umbo.name = `Umbo`;
+		// models.push(umbo);
 
-		// console.log(`Weapon bounds:`, this.getBounds());
+		this.addChild(...models);
 	}
 
 	getPlate () {
-		return this.getByName('Plate');
+		return this.getChildByName('Plate');
 	}
-
-
-	getLength () {
+	getWidth () {
 		return this.getPlate().width;
 	}
 }

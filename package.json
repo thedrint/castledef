@@ -5,11 +5,16 @@
   "description": "Simple 2d javascript game about defend and grow your castle",
   "main": "./src/index.js",
   "dependencies": {
+    "es6-tween": "^5.5.10",
+    "gsap": "^2.1.3",
     "i18next": "^16.0.0",
     "i18next-browser-languagedetector": "^3.0.1",
     "i18next-xhr-backend": "^3.0.0",
+    "k8w-pixi-tween": "^0.7.6",
     "phaser": "^3.17.0",
-    "pixi.js": "^5.0.4"
+    "pixi-tween": "^0.2.0",
+    "pixi.js": "^5.0.4",
+    "yy-intersects": "^1.0.8"
   },
   "devDependencies": {
     "cache-loader": "^4.0.0",

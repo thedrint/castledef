@@ -1,204 +1,108 @@
 
 import * as PIXI from 'pixi.js';
-import { GameSettings, FPS } from './Settings';
+import Intersects from 'yy-intersects';
+
+import { GameSettings, FPS, Defaults } from './Settings';
+
+import Utils from './Utils';
+import Scene from './Scene';
 import Weapon from './Weapon';
 import Shield from './Shield';
 
 export default class Unit extends PIXI.Container {
 
-	constructor (
-		settings = {
-			name: `John Doe`, 
-			model: {}, 
-			attrs: {}, 
-			skills: {}, 
-			equipment: {}
-		}, 
-		scene, 
-		x = 0, 
-		y = 0
-	) {
+	constructor (settings = {
+		name: Defaults.unit.name, 
+		attrs: Defaults.unit.attrs, 
+		skills: Defaults.unit.skills, 
+		equipment: Defaults.unit.equipment,
+		model: Defaults.unit.model, 
+	}) {
+
 		super();
-		scene.add.existing(this);
-		
-		this.initSettings(settings);
-	}
 
-	initSettings (settings) {
-		let {
-			name     = `John Doe`,
+		let { 
+			name      = Defaults.unit.name, 
+			attrs     = Defaults.unit.attrs, 
+			skills    = Defaults.unit.skills, 
+			equipment = Defaults.unit.equipment,
+			model     = Defaults.unit.model, 
 		} = settings;
-		let unitSettings = {
-			name     ,
-		};
-		Object.assign(this, unitSettings);
+		this.name = name;
 
-		this.initAttrs(settings.attrs);
-		this.initSkills(settings.skills);
-		this.initEquipment(settings.equipment);
-		this.initModel(settings.model);
+		this.initAttrs(attrs);
+		this.initSkills(skills);
+		this.initEquipment(equipment);
+		this.initModel(model);
 	}
 
-	initAttrs (attrs = {}) {
-		this.attrs = {};
-		let {
-			immortal = false,
-			lvl      = 0,
-			hp       = undefined,
-			mp       = undefined,
-			attack   = 0,
-			defend   = 0,
-			speed    = 1,
-		} = attrs;
-		let unitAttrs = {
-			immortal ,
-			lvl      ,
-			hp       ,
-			mp       ,
-			attack   ,
-			defend   ,
-			speed    ,
-		};
+	initAttrs (attrs = Defaults.unit.attrs) {
+		this.attrs = Utils.cleanOptionsObject(attrs, Defaults.unit.attrs);
 
-		Object.assign(this.attrs, unitAttrs);
-
-		if( this.attrs.hp == undefined ) {
+		if( this.attrs.hp == undefined ) 
 			this.attrs.hp = this.getFullHp();
-		}
-		if( this.attrs.mp == undefined ) {
+		if( this.attrs.mp == undefined ) 
 			this.attrs.mp = this.getFullMp();
-		}
 	}
 
-	initSkills (skills = {}) {
-		this.skills = {};
-		let {
-			strength  = 0,
-			agility   = 0,
-			intellect = 0,
-		} = skills;
-		let unitSkills = {
-			strength  ,
-			agility   ,
-			intellect ,
-		};
-		Object.assign(this.skills, unitSkills);
+	initSkills (skills = Defaults.unit.skills) {
+		this.skills = Utils.cleanOptionsObject(skills, Defaults.unit.skills);
 	}
 
-	initEquipment (equipment = {}) {
-		this.eq = {};
-		let {
-			head    = undefined,
-			hands   = undefined,
-			fingers = undefined,
-			foots   = undefined,
-			neck    = undefined,
-			legs    = undefined,
-			body    = undefined,
-			arms    = undefined,
-		} = equipment;
-		let unitEquipment = {
-			head    ,
-			hands   ,
-			fingers ,
-			foots   ,
-			neck    ,
-			legs    ,
-			body    ,
-			arms    ,
-		};
-		Object.assign(this.eq, unitEquipment);
+	initEquipment (equipment = Defaults.unit.equipment) {
+		this.equipment = Utils.cleanOptionsObject(equipment, Defaults.unit.equipment);
 	}
 
-	initModel (modelParams = {}) {
-		let {
-			size        = gameInternalSettings.unit.size,
-			armorColor  = 0x00ff00,
-			helmetColor = 0x000000,
-			weaponColor = 0x999999,
-			shieldColor = 0x654321,
-		} = modelParams;
-		let params = {
-			size        , 
-			armorColor  ,
-			helmetColor ,
-			weaponColor ,
-			shieldColor ,
-		};
+	initModel (model = Defaults.unit.model) {
+		let params = Utils.cleanOptionsObject(model, Defaults.unit.model);
 
-		// this.setSize(params.size, params.size);
-		let body = this.scene.add.ellipse(0, 0, params.size, params.size, params.armorColor);
-		body.setName('Body');
-		this.add(body);
+		let radius = params.size/2;
 
-		let helmet = this.scene.add.ellipse(0, 0, params.size/2, params.size/2, params.helmetColor);
-		helmet.setName('Helmet');
-		this.add(helmet);
+		let models = [];
+		//TODO: Make separate class Body or Armor
+		let body = Scene.createShape(new PIXI.Ellipse(0, 0, radius, radius), params.armorColor);
+		body.name = 'Body';
+		models.push(body);
 
-		let weapon = new Weapon({model:{color:params.weaponColor}}, this.scene, 0, params.size/2);
-		// let weapon = this.scene.add.line(0, 0, 0, params.size/2, params.size, params.size/2, params.weaponColor);
-		// weapon.setOrigin(0);
-		// weapon.setName('Weapon');
-		this.add(weapon);
+		//TODO: Make separate class Helmet
+		let helmet = Scene.createShape(new PIXI.Ellipse(0, 0, radius/2, radius/2), params.helmetColor);
+		helmet.name = 'Helmet';
+		models.push(helmet);
 
-		let bodyRadius = body.geom.width/2;
+		let weapon = new Weapon({model:{color:params.weaponColor}}, 0, params.size/2);
+		weapon.x = 0;
+		weapon.y = params.size/2;
+		// weapon.angle = -90;
+		models.push(weapon);
+
+		let bodyRadius = radius;
 		let shieldAngle = 45;
 		let shieldDot = {
 			x: bodyRadius*Math.sin(shieldAngle),
 			y: -bodyRadius*Math.cos(shieldAngle),
 		}
-		let shield = new Shield({model:{color:params.shieldColor}}, this.scene, shieldDot.x, shieldDot.y);
-		// let shield = this.scene.add.line(params.size/8+1, -params.size/8+1, +1, -params.size/2, params.size/2-1, -1, params.shieldColor);
-		// shield.setName('Shield');
-		shield.setAngle(shieldAngle);
-		this.add(shield);
+		let shield = new Shield({model:{color:params.shieldColor}}, shieldDot.x, shieldDot.y);
+		shield.x = shieldDot.x;
+		shield.y = shieldDot.y;
+		shield.angle = shieldAngle;
+		models.push(shield);
 
-		// console.log(`${this.name} bounds:`, this.getBounds());
+		this.addChild(...models);
+
+		this.shape = new Intersects.Rectangle(this);
 	}
 
 	isReady () {
 		return this.ready;
 	}
 
-	updateBoundsHelper (gameObject, color = 0xff0000) {
-		if( gameObject.boundsHelper ) {
-			gameObject.boundsHelper.destroy();
-		}
-		gameObject.boundsHelper = gameObject.scene.add.graphics();
-
-		// let d = gameObject.getWorldTransformMatrix().decomposeMatrix();
-		
-		let bounds = gameObject.getBounds();
-		console.log(`${gameObject.name} bounds:`, bounds);
-		color = 0xff0000;
-		gameObject.boundsHelper.clear();
-		gameObject.boundsHelper.lineStyle(1, color, 1);
-		gameObject.boundsHelper.strokeRectShape(bounds);
-		
-		// gameObject.boundsHelper.strokeRect(d.translateX-bounds.width/2, d.translateY-bounds.height/2, bounds.width, bounds.height);
-		// console.log(gameObject.boundsHelper);
-		// this.boundsHelper.setRotation(d.rotation);
-	}
 
 	getWeapon () {
-		return this.getByName('Weapon');
+		return this.getChildByName('Weapon');
 	}
 
 	getShield () {
-		return this.getByName('Shield');
-	}
-
-	weaponPierce () {
-		let weapon = this.getByName('Weapon');
-		let pierceLength = weapon.width;
-		this.scene.tweens.add({
-			targets: weapon,
-			duration: pierceLength/this.getWeaponSpeed(),
-			ease: 'Linear',
-			yoyo: true,
-			repeat:-1,
-			x: pierceLength,
-		});
+		return this.getChildByName('Shield');
 	}
 
 	hitHp (target) {
@@ -241,7 +145,7 @@ export default class Unit extends PIXI.Container {
 	}
 
 	getSpeed () {
-		let baseSpeed = this.attrs.speed*gameInternalSettings.unit.size;
+		let baseSpeed = this.attrs.speed*GameSettings.unit.size;
 		let speedMod = baseSpeed*this.skills.agility/10;
 		return baseSpeed + speedMod;
 	}
@@ -251,23 +155,17 @@ export default class Unit extends PIXI.Container {
 		return baseSpeed;
 	}
 
-	actionFrame () {
-		let aof = 100/this.attrs.speed;// action on frame, how many frames unit must skip to do next action
-		return aof;
-	}
-
 	getClosestEnemy () {
 		let closestEnemy = undefined;
 		for( let enemy of this.scene.fighters ) {
 			if( enemy == this || enemy.isDied() )
 				continue;
 
-			let vector = new Phaser.Math.Vector2(enemy.x - this.x, enemy.y - this.y);
-			let distance = Phaser.Math.Distance.Between(this.x, this.y, enemy.x, enemy.y);
+			let distance = Utils.distanceBetween(this, enemy);
 			if( !closestEnemy )
-				closestEnemy = {enemy, distance, vector};
+				closestEnemy = {enemy, distance};
 			if( closestEnemy.distance > distance )
-				closestEnemy = {enemy, distance, vector};
+				closestEnemy = {enemy, distance};
 		}
 
 		return closestEnemy;
