@@ -1,4 +1,5 @@
 *.sublime-*
+/package-lock.json
 /node_modules
 /dev*
 /public*
