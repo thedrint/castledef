@@ -62,17 +62,19 @@ export default class Unit extends PIXI.Container {
 		//TODO: Make separate class Body or Armor
 		let body = Scene.createShape(new PIXI.Ellipse(0, 0, radius, radius), params.armorColor);
 		body.name = 'Body';
+		body.shape = new Intersects.Circle(body);
 		models.push(body);
 
 		//TODO: Make separate class Helmet
 		let helmet = Scene.createShape(new PIXI.Ellipse(0, 0, radius/2, radius/2), params.helmetColor);
 		helmet.name = 'Helmet';
+		helmet.shape = new Intersects.Circle(helmet);
 		models.push(helmet);
 
 		let weapon = new Weapon({model:{color:params.weaponColor}}, 0, params.size/2);
 		weapon.x = 0;
 		weapon.y = params.size/2;
-		// weapon.angle = -90;
+		// weapon.angle = -90;		
 		models.push(weapon);
 
 		let bodyRadius = radius;

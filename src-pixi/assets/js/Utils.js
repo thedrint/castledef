@@ -240,7 +240,7 @@ export default class Utils {
 	}
 
 	static random (min, max) {
-		return new Utils.randomInt(min, max);
+		return new Utils().randomInt(min, max);
 	}
 
 	/*

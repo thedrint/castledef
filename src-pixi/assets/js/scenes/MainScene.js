@@ -1,7 +1,7 @@
 
 import * as PIXI from 'pixi.js';
 
-import { ApplicationSettings } from './../Settings';
+import { ApplicationSettings, FPS } from './../Settings';
 
 import Scene from './../Scene';
 import Unit from './../Unit';
@@ -46,8 +46,10 @@ export default class MainScene extends Scene {
 		this.drawChild(BadGuy, 480, 128);
 		this.drawBounds(BadGuy);
 
-		console.log(JohnWick.getGlobalPosition(), BadGuy.getGlobalPosition());
-		console.log(Utils.distanceBetween(JohnWick, BadGuy));
+		// console.log(`Does JohnWick collides BadGuy?`, JohnWick.shape.collidesRectangle(BadGuy.shape));
+
+		console.log('Initial positions of enemies', JohnWick.getGlobalPosition(), BadGuy.getGlobalPosition());
+		console.log('Initial distance between enemies', Utils.distanceBetween(JohnWick, BadGuy));
 
 		this.fighters.add(JohnWick).add(BadGuy);
 	}
@@ -57,6 +59,8 @@ export default class MainScene extends Scene {
 		this.fighters.forEach( fighter => {
 			// Example of dynamic switching scene
 			this.seekAndDestroy(fighter);
+			this.drawBounds(fighter);
+
 			// if( fighter.rotation >= 2 ) {
 			// 	this.app.stage.switchTo("Empty");
 			// }
@@ -65,8 +69,19 @@ export default class MainScene extends Scene {
 
 	seekAndDestroy (fighter) {
 		let enemy = fighter.getClosestEnemy().enemy;
-		this.utils.followConstant(fighter, enemy, 1);
-		fighter.rotation = this.utils.angle(fighter, enemy);
+		fighter.shape.update();
+		let collide = fighter.shape.collidesRectangle(enemy.shape);
+		// console.log(`Does Fighter collides Enemy?`, collide);
+
+		// If fighters too far - move towards
+		// Otherwise - clash begins
+		if( !collide ) {
+			this.utils.followConstant(fighter, enemy, fighter.getSpeed()/FPS.target);
+			fighter.rotation = this.utils.angle(fighter, enemy);			
+		}
+		else {
+			this.clash(fighter);
+		}
 	}
 
 	clash (fighter) {
@@ -74,21 +89,22 @@ export default class MainScene extends Scene {
 		let closest = fighter.getClosestEnemy();
 		let enemy = closest.enemy;
 
-		let fighterGeom = {
-			weapon : fighter.getWeapon().getBlade().geom,
-			shield : fighter.getShield().getPlate().geom,
-			body   : fighter.getByName(`Body`).geom,
+		let fighterShapes = {
+			weapon : fighter.getWeapon().getBlade().shape,
+			shield : fighter.getShield().getPlate().shape,
+			body   : fighter.getChildByName(`Body`).shape,
 		};
-		let enemyGeom   = {
-			weapon : enemy.getWeapon().getBlade().geom,
-			shield : enemy.getShield().getPlate().geom,
-			body   : enemy.getByName(`Body`).geom,
+		let enemyShapes   = {
+			weapon : enemy.getWeapon().getBlade().shape,
+			shield : enemy.getShield().getPlate().shape,
+			body   : enemy.getChildByName(`Body`).shape,
 		}
 		let checkIntersects = {
-			weapon2shield: Phaser.Geom.Intersects.LineToLine(fighterGeom.weapon, enemyGeom.shield),
-			weapon2body: Phaser.Geom.Intersects.LineToCircle(fighterGeom.weapon, enemyGeom.body),
-			shield2body: Phaser.Geom.Intersects.LineToCircle(fighterGeom.shield, enemyGeom.body),
-			body2body: Phaser.Geom.Intersects.CircleToCircle(fighterGeom.body, enemyGeom.body),
+			weapon2shield : fighterShapes.weapon.collidesRectangle(enemyShapes.shield),
+			weapon2body   : fighterShapes.weapon.collidesCircle(enemyShapes.body),
+			shield2body   : fighterShapes.shield.collidesCircle(enemyShapes.body),
+			shield2shield : fighterShapes.shield.collidesRectangle(enemyShapes.shield),
+			body2body     : fighterShapes.body.collidesCircle(enemyShapes.body),
 		};
 
 		let isInterects = false;
@@ -99,10 +115,11 @@ export default class MainScene extends Scene {
 			}
 		}
 		if( isInterects ) {
-			console.log(checkIntersects);
+			// console.log(checkIntersects);
 			// console.log('Clash!');
 			fighter.hitHp(enemy);
 			if( enemy.isDied() ) {
+				this.removeBounds(enemy);
 				this.fighters.delete(enemy);
 				enemy.destroy();
 
@@ -114,7 +131,7 @@ export default class MainScene extends Scene {
 					x: Utils.random(0, ApplicationSettings.width),
 					y: Utils.random(0, ApplicationSettings.height),
 				};
-				this.drawChild(BadGuy, randomPoint.x, randomPoint.y);
+				this.drawChild(newBadGuy, randomPoint.x, randomPoint.y);
 				
 				this.fighters.add(newBadGuy);
 			}
@@ -142,6 +159,12 @@ export default class MainScene extends Scene {
 		displayObject.boundsHelper.clear();
 		displayObject.boundsHelper.lineStyle(1, color);
 		displayObject.boundsHelper.drawShape(displayObject.getBounds());
+	}
+
+	removeBounds (displayObject) {
+		if( displayObject.boundsHelper ) {
+			displayObject.boundsHelper.destroy();
+		}
 	}
 
 }

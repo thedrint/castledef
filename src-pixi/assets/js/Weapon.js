@@ -1,6 +1,7 @@
 
 import * as PIXI from 'pixi.js';
 import * as TWEEN from 'es6-tween';
+import Intersects from 'yy-intersects';
 
 import { GameSettings, FPS, Defaults } from './Settings';
 import Utils from './Utils';
@@ -41,12 +42,16 @@ export default class Weapon extends PIXI.Graphics {
 		//TODO: Ha-ha, rectangled blade like from orcs
 		let blade = Scene.createShape(new PIXI.Rectangle(0, 0, bladeLength, bladeWidth), params.color);
 		blade.name = `Blade`;
+		blade.shape = new Intersects.Rectangle(blade);
 		models.push(blade);
 		// let guard = Scene.createShape(new PIXI.Rectangle(0, 0, guardWidth, guardDepth), params.color);
 		// guard.name = `Guard`;
+		// guard.shape = new Intersects.Rectangle(guard);
 		// model.push(guard);
 
 		this.addChild(...models);
+
+		this.shape = new Intersects.Rectangle(this);
 	}
 
 	getBlade () {
