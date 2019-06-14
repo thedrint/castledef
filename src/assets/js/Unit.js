@@ -1,6 +1,6 @@
 
 import * as PIXI from 'pixi.js';
-import Intersects from 'yy-intersects';
+import IntersectHelper from './IntersectHelper';
 
 import { GameSettings, FPS, Defaults } from './Settings';
 
@@ -62,18 +62,19 @@ export default class Unit extends PIXI.Container {
 		//TODO: Make separate class Body or Armor
 		let body = Scene.createShape(new PIXI.Ellipse(0, 0, radius, radius), params.armorColor);
 		body.name = 'Body';
-		body.shape = new Intersects.Circle(body);
+		body.shape = new IntersectHelper.Circle(body);
 		models.push(body);
 
 		//TODO: Make separate class Helmet
 		let helmet = Scene.createShape(new PIXI.Ellipse(0, 0, radius/2, radius/2), params.helmetColor);
 		helmet.name = 'Helmet';
-		helmet.shape = new Intersects.Circle(helmet);
+		helmet.shape = new IntersectHelper.Circle(helmet);
 		models.push(helmet);
 
-		let weapon = new Weapon({model:{color:params.weaponColor}}, 0, params.size/2);
-		weapon.x = 0;
-		weapon.y = params.size/2;
+		let weapon = new Weapon({model:{color:params.weaponColor}});
+		weapon.setTransform(0, params.size/2);
+		// weapon.x = 0;
+		// weapon.y = params.size/2;
 		// weapon.angle = -90;		
 		models.push(weapon);
 
@@ -83,7 +84,9 @@ export default class Unit extends PIXI.Container {
 			x: bodyRadius*Math.sin(shieldAngle),
 			y: -bodyRadius*Math.cos(shieldAngle),
 		}
-		let shield = new Shield({model:{color:params.shieldColor}}, shieldDot.x, shieldDot.y);
+		let shield = new Shield({model:{color:params.shieldColor}});
+		// shield.setTransform(undefined, undefined, undefined, undefined, undefined, undefined, undefined, );
+		// shield.setTransform(shieldDot.x, shieldDot.y, undefined, undefined, shieldAngle*Math.PI/180);
 		shield.x = shieldDot.x;
 		shield.y = shieldDot.y;
 		shield.angle = shieldAngle;
@@ -91,7 +94,7 @@ export default class Unit extends PIXI.Container {
 
 		this.addChild(...models);
 
-		this.shape = new Intersects.Rectangle(this);
+		this.shape = new IntersectHelper.Rectangle(this);
 	}
 
 	isReady () {
@@ -113,7 +116,7 @@ export default class Unit extends PIXI.Container {
 
 		let damage = this.calcHpDamage() - this.calcHpDefend();
 		target.attrs.hp -= damage;
-		// console.log(`${this.name} hitted ${target.name} with ${damage} damage`);
+		console.log(`${this.name} hitted ${target.name} with ${damage} damage`);
 		if( target.isDied() ) {
 			//TODO: Event - Target unit dies
 			console.log(`${target.name} killed!`);

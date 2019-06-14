@@ -23,6 +23,9 @@ export default class Application extends PIXI.Application {
 		this.initTween();
 		this.initScenes();
 
+		// this.ticker.minFPS = 1;
+		// this.ticker.maxFPS = 1;
+
 		this.ticker.add((dt) => { 
 			TWEEN.update();
 			this.stage.getCurrentScene().update();

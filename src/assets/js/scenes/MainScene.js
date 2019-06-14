@@ -1,5 +1,6 @@
 
 import * as PIXI from 'pixi.js';
+import IntersectHelper from './../IntersectHelper';
 
 import { ApplicationSettings, FPS } from './../Settings';
 
@@ -9,7 +10,7 @@ import Hero from './../Hero';
 
 import Utils from './../Utils';
 // load sprites
-import KnightImage from './../../img/knight.png';
+// import KnightImage from './../../img/knight.png';
 
 export default class MainScene extends Scene {
 
@@ -23,12 +24,6 @@ export default class MainScene extends Scene {
 	}
 
 	create () {
-		// let knight = PIXI.Sprite.from(KnightImage);
-		// knight.anchor.set(0.5);
-		// knight.x = 96;
-		// knight.y = 96;
-		// this.addChild(knight);
-		// this.fighters.add(knight);
 
 		let JohnWick = new Hero({name  :`John Wick`, 
 			attrs : {lvl:10, attack:10, immortal:true},
@@ -36,41 +31,27 @@ export default class MainScene extends Scene {
 		});
 		this.drawChild(JohnWick, 128, 128);
 		// JohnWick.angle = 45;
-		this.drawBounds(JohnWick);
+		// this.drawBounds(JohnWick);
 		console.log(JohnWick);
 		JohnWick.getWeapon().pierce();
 
 		let BadGuy = new Unit({name:`Bad Guy`, 
 			attrs: {lvl:10, attack:5},
 		});
-		this.drawChild(BadGuy, 256, 164);
-		BadGuy.angle = -135;
-		this.drawBounds(BadGuy);
-
-		// console.log(`Does JohnWick collides BadGuy?`, JohnWick.shape.collidesRectangle(BadGuy.shape));
-
-		console.log('Initial positions of enemies', JohnWick.getGlobalPosition(), BadGuy.getGlobalPosition());
-		console.log('Initial distance between enemies', Utils.distanceBetween(JohnWick, BadGuy));
-
+		this.drawChild(BadGuy, 128+128, 128+32);
+		BadGuy.angle = 180;
+		// this.drawBounds(BadGuy);
+		
 		this.fighters.add(JohnWick).add(BadGuy);
 	}
 
 
 	update () {
 		this.fighters.forEach( fighter => {
-			if( fighter.name == 'John Wick' ) {
-				let enemy = fighter.getClosestEnemy().enemy;
-				let collides = this.getIntersects(fighter, enemy);
-				console.log(collides.weapon2shield);
-				if( collides.weapon2shield ) 
-					enemy.getChildByName('Body').alpha = 0.5;
-				else
-					enemy.getChildByName('Body').alpha = 1;
-
-				// console.log(collides);
-			}
-			// this.seekAndDestroy(fighter);
-			this.drawBounds(fighter);
+			this.seekAndDestroy(fighter);
+			// this.drawBounds(fighter);
+			// this.drawBounds(fighter.getShield(), 0x660066);
+			// this.drawBounds(fighter.getWeapon(), 0xff00ff);
 
 			// Example of dynamic switching scene
 			// if( fighter.rotation >= 2 ) {
@@ -87,10 +68,12 @@ export default class MainScene extends Scene {
 		// If fighters too far - move towards
 		// Otherwise - clash begins
 		if( !collide ) {
-			// this.moveTo(fighter, enemy);
+			fighter.getChildByName('Body').alpha = 1;
+			fighter.getShield().alpha = 1;
+			this.moveTo(fighter, enemy);
 		}
 		else {
-			// this.clash(fighter);
+			this.clash(fighter);
 		}
 	}
 
@@ -113,10 +96,10 @@ export default class MainScene extends Scene {
 		}
 
 		for( let k in fighterShapes ) {
-			fighterShapes[k].shape.set({center:fighterShapes[k].getGlobalPosition(), rotation: fighterShapes[k]});
+			IntersectHelper.updateIntersectShape(fighterShapes[k]);
 		}
 		for( let k in enemyShapes ) {
-			enemyShapes[k].shape.set({center:enemyShapes[k].getGlobalPosition(), rotation: enemyShapes[k]});
+			IntersectHelper.updateIntersectShape(enemyShapes[k]);
 		}
 
 		const checkIntersects = {
@@ -128,54 +111,39 @@ export default class MainScene extends Scene {
 		};
 
 		return checkIntersects;
-
-		let isInterects = false;
-		for( let check in checkIntersects ) {
-			if( checkIntersects[check] ) {
-				isInterects = true;
-				break;
-			}
-		}
 	}
 
 	clash (fighter) {
 
-		let closest = fighter.getClosestEnemy();
-		let enemy = closest.enemy;
-
-		let fighterShapes = {
-			weapon : fighter.getWeapon().getBlade().shape,
-			shield : fighter.getShield().getPlate().shape,
-			body   : fighter.getChildByName(`Body`).shape,
-		};
-		let enemyShapes   = {
-			weapon : enemy.getWeapon().getBlade().shape,
-			shield : enemy.getShield().getPlate().shape,
-			body   : enemy.getChildByName(`Body`).shape,
-		}
-
-		console.log(fighterShapes.weapon);
-		let checkIntersects = {
-			weapon2shield : fighterShapes.weapon.collidesRectangle(enemyShapes.shield),
-			weapon2body   : fighterShapes.weapon.collidesCircle(enemyShapes.body),
-			shield2body   : fighterShapes.shield.collidesCircle(enemyShapes.body),
-			shield2shield : fighterShapes.shield.collidesRectangle(enemyShapes.shield),
-			body2body     : fighterShapes.body.collidesCircle(enemyShapes.body),
-		};
-
+		let enemy = fighter.getClosestEnemy().enemy;
+		let collides = this.getIntersects(fighter, enemy);
 		let isInterects = false;
-		for( let check in checkIntersects ) {
-			if( checkIntersects[check] ) {
-				isInterects = true;
-				break;
-			}
+
+		// console.log(collides);
+		if( collides.weapon2shield || collides.shield2shield ) {
+			enemy.getShield().alpha = 0.5;
+			isInterects = true;
 		}
-		if( isInterects ) {
+		else {
+			enemy.getShield().alpha = 1;
+		}
+
+		if( collides.weapon2body || collides.shield2body || collides.body2body ) {
+				enemy.getChildByName('Body').alpha = 0.5;
+				isInterects = true;
+		}
+		else {
+			enemy.getChildByName('Body').alpha = 1;
+		}
+
+		if( isInterects && (collides.weapon2body || collides.shield2body) ) {
 			// console.log(checkIntersects);
 			// console.log('Clash!');
 			fighter.hitHp(enemy);
 			if( enemy.isDied() ) {
 				this.removeBounds(enemy);
+				this.removeBounds(enemy.getWeapon());
+				this.removeBounds(enemy.getShield());
 				this.fighters.delete(enemy);
 				enemy.destroy();
 
@@ -196,7 +164,6 @@ export default class MainScene extends Scene {
 		else {
 			this.moveTo(fighter, enemy);
 		}
-
 	}
 	/**
 	 * Init internal scene objects
@@ -223,5 +190,4 @@ export default class MainScene extends Scene {
 			displayObject.boundsHelper.destroy();
 		}
 	}
-
 }

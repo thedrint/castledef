@@ -1,7 +1,7 @@
 
 import * as PIXI from 'pixi.js';
 import * as TWEEN from 'es6-tween';
-import Intersects from 'yy-intersects';
+import IntersectHelper from './IntersectHelper';
 
 import { GameSettings, FPS, Defaults } from './Settings';
 import Utils from './Utils';
@@ -13,7 +13,7 @@ export default class Weapon extends PIXI.Graphics {
 		name: Defaults.weapon.name, 
 		attrs: Defaults.weapon.attrs, 
 		model: Defaults.weapon.model
-	}, x = 0, y = 0) {
+	}) {
 
 		super();
 
@@ -51,7 +51,7 @@ export default class Weapon extends PIXI.Graphics {
 
 		this.addChild(...models);
 
-		this.shape = new Intersects.Rectangle(this, {center:this.getGlobalPosition(), rotation:this});
+		this.shape = new IntersectHelper.Rectangle(this);
 	}
 
 	getBlade () {
@@ -65,7 +65,7 @@ export default class Weapon extends PIXI.Graphics {
 		let pierceLength = this.width;
 
 		const tween = new TWEEN.Tween(this)
-			.to({x:pierceLength}, 1000)
+			.to({x:pierceLength}, 200)
 			.repeat(Infinity)
 			.easing(TWEEN.Easing.Linear.None)
 			.yoyo(true)

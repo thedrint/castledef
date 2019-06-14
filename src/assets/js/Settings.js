@@ -71,7 +71,7 @@ export const Defaults = {
 			defend : 1,
 		}, 
 		model : {
-			size  : 0.5,
+			size  : 1,
 			color : 0x654321,
 		}, 
 	}, 
