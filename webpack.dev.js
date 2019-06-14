@@ -4,8 +4,8 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
-const wwwData = 'dev-pixi';// Site dir on server (relative to this config)
-const srcData = './src-pixi';// Site dir on server (relative to this config)
+const wwwData = 'dev';
+const srcData = './src';
 
 module.exports = {
 	mode: "development",
@@ -26,7 +26,6 @@ module.exports = {
 	plugins: [
 		new CleanWebpackPlugin(),
 		new CopyWebpackPlugin([
-			// {from: './assets/img/decks', to: './assets/img/decks', context: './src'},
 			{from: './assets/locales', to: './assets/locales', context: srcData},
 		]),
 		new HtmlWebpackPlugin({
@@ -36,22 +35,22 @@ module.exports = {
 		}),
 	],
 	module:
-		{
-			rules:
-				[
+	{
+		rules:
+		[
+			{
+				test: /\.(png|jpe?g|gif|svg)$/,
+				include: path.resolve(__dirname, `${srcData}/assets/img`),
+				use: [
 					{
-						test: /\.(png|jpe?g|gif|svg)$/,
-						include: path.resolve(__dirname, `${srcData}/assets/img`),
-						use: [
-							{
-								loader: 'url-loader',
-								options: {
-									context: srcData, name:'[path][name].[ext]',
-									limit: 128,
-								}
-							},
-						],
+						loader: 'url-loader',
+						options: {
+							context: srcData, name:'[path][name].[ext]',
+							limit: 128,
+						},
 					},
-				]
-		},
+				],
+			},
+		],
+	},
 };
