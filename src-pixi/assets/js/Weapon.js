@@ -42,7 +42,7 @@ export default class Weapon extends PIXI.Graphics {
 		//TODO: Ha-ha, rectangled blade like from orcs
 		let blade = Scene.createShape(new PIXI.Rectangle(0, 0, bladeLength, bladeWidth), params.color);
 		blade.name = `Blade`;
-		blade.shape = new Intersects.Rectangle(blade);
+		// blade.shape = new Intersects.Rectangle(blade);
 		models.push(blade);
 		// let guard = Scene.createShape(new PIXI.Rectangle(0, 0, guardWidth, guardDepth), params.color);
 		// guard.name = `Guard`;
@@ -51,7 +51,7 @@ export default class Weapon extends PIXI.Graphics {
 
 		this.addChild(...models);
 
-		this.shape = new Intersects.Rectangle(this);
+		this.shape = new Intersects.Rectangle(this, {center:this.getGlobalPosition(), rotation:this});
 	}
 
 	getBlade () {
@@ -69,7 +69,9 @@ export default class Weapon extends PIXI.Graphics {
 			.repeat(Infinity)
 			.easing(TWEEN.Easing.Linear.None)
 			.yoyo(true)
-			// .on('update', () => console.log(tween))
+			// .on('update', () => {
+			// 	console.log(tween)
+			// })
 			.start()
 		;
 	}

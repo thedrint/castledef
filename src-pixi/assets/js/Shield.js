@@ -39,7 +39,7 @@ export default class Shield extends PIXI.Graphics {
 		plate.pivot.x = 0.5 * plate.width;
 		plate.pivot.y = 0.5 * plate.height;
 		plate.name = `Plate`;
-		plate.shape = new Intersects.Rectangle(plate);
+		// plate.shape = new Intersects.Rectangle(plate);
 		models.push(plate);
 		// let umbo = Scene.CreateShape(0, 0, 0, 0, shieldLength, 0, params.color);
 		// umbo.setOrigin(0.5);
@@ -49,7 +49,7 @@ export default class Shield extends PIXI.Graphics {
 
 		this.addChild(...models);
 
-		this.shape = new Intersects.Rectangle(this);
+		this.shape = new Intersects.Rectangle(this, {center:this.getGlobalPosition(), rotation:this});
 	}
 
 	getPlate () {

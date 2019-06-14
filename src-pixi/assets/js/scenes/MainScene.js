@@ -43,7 +43,8 @@ export default class MainScene extends Scene {
 		let BadGuy = new Unit({name:`Bad Guy`, 
 			attrs: {lvl:10, attack:5},
 		});
-		this.drawChild(BadGuy, 480, 128);
+		this.drawChild(BadGuy, 256, 164);
+		BadGuy.angle = -135;
 		this.drawBounds(BadGuy);
 
 		// console.log(`Does JohnWick collides BadGuy?`, JohnWick.shape.collidesRectangle(BadGuy.shape));
@@ -57,10 +58,21 @@ export default class MainScene extends Scene {
 
 	update () {
 		this.fighters.forEach( fighter => {
-			// Example of dynamic switching scene
-			this.seekAndDestroy(fighter);
+			if( fighter.name == 'John Wick' ) {
+				let enemy = fighter.getClosestEnemy().enemy;
+				let collides = this.getIntersects(fighter, enemy);
+				console.log(collides.weapon2shield);
+				if( collides.weapon2shield ) 
+					enemy.getChildByName('Body').alpha = 0.5;
+				else
+					enemy.getChildByName('Body').alpha = 1;
+
+				// console.log(collides);
+			}
+			// this.seekAndDestroy(fighter);
 			this.drawBounds(fighter);
 
+			// Example of dynamic switching scene
 			// if( fighter.rotation >= 2 ) {
 			// 	this.app.stage.switchTo("Empty");
 			// }
@@ -71,16 +83,58 @@ export default class MainScene extends Scene {
 		let enemy = fighter.getClosestEnemy().enemy;
 		fighter.shape.update();
 		let collide = fighter.shape.collidesRectangle(enemy.shape);
-		// console.log(`Does Fighter collides Enemy?`, collide);
 
 		// If fighters too far - move towards
 		// Otherwise - clash begins
 		if( !collide ) {
-			this.utils.followConstant(fighter, enemy, fighter.getSpeed()/FPS.target);
-			fighter.rotation = this.utils.angle(fighter, enemy);			
+			// this.moveTo(fighter, enemy);
 		}
 		else {
-			this.clash(fighter);
+			// this.clash(fighter);
+		}
+	}
+
+	moveTo (fighter, enemy) {
+			this.utils.followConstant(fighter, enemy, fighter.getSpeed()/FPS.target);
+			fighter.rotation = this.utils.angle(fighter, enemy);		
+	}
+
+	getIntersects (fighter, enemy) {
+
+		let fighterShapes = {
+			weapon : fighter.getWeapon(),
+			shield : fighter.getShield(),
+			body   : fighter.getChildByName(`Body`),
+		};
+		let enemyShapes   = {
+			weapon : enemy.getWeapon(),
+			shield : enemy.getShield(),
+			body   : enemy.getChildByName(`Body`),
+		}
+
+		for( let k in fighterShapes ) {
+			fighterShapes[k].shape.set({center:fighterShapes[k].getGlobalPosition(), rotation: fighterShapes[k]});
+		}
+		for( let k in enemyShapes ) {
+			enemyShapes[k].shape.set({center:enemyShapes[k].getGlobalPosition(), rotation: enemyShapes[k]});
+		}
+
+		const checkIntersects = {
+			weapon2shield : fighterShapes.weapon.shape.collidesRectangle(enemyShapes.shield.shape),
+			weapon2body   : fighterShapes.weapon.shape.collidesCircle(enemyShapes.body.shape),
+			shield2body   : fighterShapes.shield.shape.collidesCircle(enemyShapes.body.shape),
+			shield2shield : fighterShapes.shield.shape.collidesRectangle(enemyShapes.shield.shape),
+			body2body     : fighterShapes.body.shape.collidesCircle(enemyShapes.body.shape),
+		};
+
+		return checkIntersects;
+
+		let isInterects = false;
+		for( let check in checkIntersects ) {
+			if( checkIntersects[check] ) {
+				isInterects = true;
+				break;
+			}
 		}
 	}
 
@@ -99,6 +153,8 @@ export default class MainScene extends Scene {
 			shield : enemy.getShield().getPlate().shape,
 			body   : enemy.getChildByName(`Body`).shape,
 		}
+
+		console.log(fighterShapes.weapon);
 		let checkIntersects = {
 			weapon2shield : fighterShapes.weapon.collidesRectangle(enemyShapes.shield),
 			weapon2body   : fighterShapes.weapon.collidesCircle(enemyShapes.body),
@@ -138,6 +194,7 @@ export default class MainScene extends Scene {
 			// Start a fight
 		}
 		else {
+			this.moveTo(fighter, enemy);
 		}
 
 	}
