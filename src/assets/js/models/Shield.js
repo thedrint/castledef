@@ -1,10 +1,10 @@
 
 import * as PIXI from 'pixi.js';
-import IntersectHelper from './IntersectHelper';
+import IntersectHelper from './../IntersectHelper';
 
-import { GameSettings, FPS, Defaults } from './Settings';
-import Utils from './Utils';
-import Scene from './Scene';
+import { GameSettings, FPS, Defaults } from './../Settings';
+import Utils from './../Utils';
+import Scene from './../Scene';
 
 export default class Shield extends PIXI.Graphics {
 
@@ -36,15 +36,11 @@ export default class Shield extends PIXI.Graphics {
 
 		let models = [];
 		let plate = Scene.createShape(new PIXI.Rectangle(0, 0, plateWidth, plateHeight), params.color);
-		// plate.pivot.x = 0.5 * plate.width;
-		// plate.pivot.y = 0.5 * plate.height;
 		plate.name = `Plate`;
-		// plate.shape = new Intersects.Rectangle(plate);
 		models.push(plate);
 		// let umbo = Scene.CreateShape(0, 0, 0, 0, shieldLength, 0, params.color);
 		// umbo.setOrigin(0.5);
 		// umbo.name = `Umbo`;
-		// umbo.shape = new Intersects.Shape(umbo);
 		// models.push(umbo);
 
 		this.addChild(...models);

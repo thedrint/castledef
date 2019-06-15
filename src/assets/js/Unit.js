@@ -6,8 +6,10 @@ import { GameSettings, FPS, Defaults } from './Settings';
 
 import Utils from './Utils';
 import Scene from './Scene';
-import Weapon from './Weapon';
-import Shield from './Shield';
+import Body from './models/Body';
+import Helmet from './models/Helmet';
+import Weapon from './models/Weapon';
+import Shield from './models/Shield';
 
 export default class Unit extends PIXI.Container {
 
@@ -60,22 +62,18 @@ export default class Unit extends PIXI.Container {
 
 		let models = [];
 		//TODO: Make separate class Body or Armor
-		let body = Scene.createShape(new PIXI.Ellipse(0, 0, radius, radius), params.armorColor);
-		body.name = 'Body';
-		body.shape = new IntersectHelper.Circle(body);
+		// let body = Scene.createShape(new PIXI.Ellipse(0, 0, radius, radius), params.armorColor);
+		let body = new Body({model:{color:params.armorColor}});
+		body.setTransform(0, 0);
 		models.push(body);
 
 		//TODO: Make separate class Helmet
-		let helmet = Scene.createShape(new PIXI.Ellipse(0, 0, radius/2, radius/2), params.helmetColor);
-		helmet.name = 'Helmet';
-		helmet.shape = new IntersectHelper.Circle(helmet);
+		let helmet = new Helmet({model:{color:params.helmetColor}});
+		helmet.setTransform(0, 0);
 		models.push(helmet);
 
 		let weapon = new Weapon({model:{color:params.weaponColor}});
 		weapon.setTransform(0, params.size/2);
-		// weapon.x = 0;
-		// weapon.y = params.size/2;
-		// weapon.angle = -90;		
 		models.push(weapon);
 
 		let bodyRadius = radius;
@@ -85,8 +83,6 @@ export default class Unit extends PIXI.Container {
 			y: -bodyRadius*Math.cos(shieldAngle),
 		}
 		let shield = new Shield({model:{color:params.shieldColor}});
-		// shield.setTransform(undefined, undefined, undefined, undefined, undefined, undefined, undefined, );
-		// shield.setTransform(shieldDot.x, shieldDot.y, undefined, undefined, shieldAngle*Math.PI/180);
 		shield.x = shieldDot.x;
 		shield.y = shieldDot.y;
 		shield.angle = shieldAngle;
@@ -101,6 +97,14 @@ export default class Unit extends PIXI.Container {
 		return this.ready;
 	}
 
+
+	getBody () {
+		return this.getChildByName('Body');
+	}
+
+	getHelmet () {
+		return this.getChildByName('Helmet');
+	}
 
 	getWeapon () {
 		return this.getChildByName('Weapon');
@@ -166,7 +170,7 @@ export default class Unit extends PIXI.Container {
 			if( enemy == this || enemy.isDied() )
 				continue;
 
-			let distance = Utils.distanceBetween(this, enemy);
+			let distance = Utils.distance(this, enemy);
 			if( !closestEnemy )
 				closestEnemy = {enemy, distance};
 			if( closestEnemy.distance > distance )

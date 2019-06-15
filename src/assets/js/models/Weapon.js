@@ -1,11 +1,11 @@
 
 import * as PIXI from 'pixi.js';
 import * as TWEEN from 'es6-tween';
-import IntersectHelper from './IntersectHelper';
+import IntersectHelper from './../IntersectHelper';
 
-import { GameSettings, FPS, Defaults } from './Settings';
-import Utils from './Utils';
-import Scene from './Scene';
+import { GameSettings, FPS, Defaults } from './../Settings';
+import Utils from './../Utils';
+import Scene from './../Scene';
 
 export default class Weapon extends PIXI.Graphics {
 
@@ -27,6 +27,8 @@ export default class Weapon extends PIXI.Graphics {
 		this.attrs = Utils.cleanOptionsObject(settings, Defaults.weapon.attrs);
 
 		this.initModel(model);
+
+		this.piercing = false;
 	}
 
 	initModel (model = Defaults.weapon.model) {
@@ -61,18 +63,27 @@ export default class Weapon extends PIXI.Graphics {
 		return this.getBlade().width;
 	}
 
-	pierce () {
+	pierce (target, speed = 200) {
+		if( this.piercing )
+			return;
+		
 		let pierceLength = this.width;
 
 		const tween = new TWEEN.Tween(this)
-			.to({x:pierceLength}, 200)
-			.repeat(Infinity)
+			.to({x:pierceLength}, speed)
+			.repeat(1)
 			.easing(TWEEN.Easing.Linear.None)
 			.yoyo(true)
 			// .on('update', () => {
 			// 	console.log(tween)
 			// })
+			.on('complete', () => {
+				// console.log(tween);
+				this.piercing = false;
+			})
 			.start()
 		;
+
+		this.piercing = true;
 	}
 }

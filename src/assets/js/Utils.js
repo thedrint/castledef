@@ -48,7 +48,7 @@ export default class Utils {
 		return Math.sqrt(Math.pow(worldPos2.x-worldPos1.x, 2) + Math.pow(worldPos2.y-worldPos1.y, 2));
 	}
 
-	distance(s1, s2) {
+	static distance(s1, s2) {
 		let vx = (s2.x + this._getCenter(s2, s2.width, "x")) - (s1.x + this._getCenter(s1, s1.width, "x")),
 				vy = (s2.y + this._getCenter(s2, s2.height, "y")) - (s1.y + this._getCenter(s1, s1.height, "y"));
 		return Math.sqrt(vx * vx + vy * vy);
@@ -69,7 +69,7 @@ export default class Utils {
 	Use it inside a game loop.
 	*/
 
-	followEase(follower, leader, speed) {
+	static followEase(follower, leader, speed) {
 
 		//Figure out the distance between the sprites
 		/*
@@ -104,11 +104,25 @@ export default class Utils {
 
 	*/
 
-	followConstant(follower, leader, speed) {
+	static followConstant(follower, leader, speed) {
 
 		//Figure out the distance between the sprites
 		let vx = (leader.x + this._getCenter(leader, leader.width, "x")) - (follower.x + this._getCenter(follower, follower.width, "x")),
 				vy = (leader.y + this._getCenter(leader, leader.height, "y")) - (follower.y + this._getCenter(follower, follower.height, "y")),
+				distance = Math.sqrt(vx * vx + vy * vy);
+
+		//Move the follower if it's more than 1 move
+		//away from the leader
+		if (distance >= speed) {
+			follower.x += (vx / distance) * speed;
+			follower.y += (vy / distance) * speed;
+		}
+	}
+
+	static follow (follower, to, speed) {
+		//Figure out the distance between the sprites
+		let vx = (to.x) - (follower.x + this._getCenter(follower, follower.width, "x")),
+				vy = (to.y) - (follower.y + this._getCenter(follower, follower.height, "y")),
 				distance = Math.sqrt(vx * vx + vy * vy);
 
 		//Move the follower if it's more than 1 move
@@ -133,7 +147,7 @@ export default class Utils {
 
 	*/
 
-	angle(s1, s2) {
+	static angle(s1, s2) {
 		return Math.atan2(
 			//This is the code you need if you don't want to compensate
 			//for a possible shift in the sprites' x/y anchor points
@@ -147,6 +161,20 @@ export default class Utils {
 		);
 	}
 
+	static getAngle (s1, s2) {
+		return Math.atan2(
+			//This is the code you need if you don't want to compensate
+			//for a possible shift in the sprites' x/y anchor points
+			/*
+			(s2.y + s2.height / 2) - (s1.y + s1.height / 2),
+			(s2.x + s2.width / 2) - (s1.x + s1.width / 2)
+			*/
+			//This code adapts to a shifted anchor point
+			(s2.y) - (s1.y + this._getCenter(s1, s1.height, "y")),
+			(s2.x) - (s1.x + this._getCenter(s1, s1.width, "x"))
+		);
+	}
+
 	/*
 	_getCenter
 	----------
@@ -156,7 +184,7 @@ export default class Utils {
 	If the anchor point has been shifted, then the anchor x/y point is used as the sprite's center
 	*/
 
-	_getCenter(o, dimension, axis) {
+	static _getCenter(o, dimension, axis) {
 		if (o.anchor !== undefined) {
 			if (o.anchor[axis] !== 0) {
 				return 0;
@@ -185,7 +213,7 @@ export default class Utils {
 	Use it inside a game loop, and make sure you update the angle value (the 4th argument) each frame.
 	*/
 
-	rotateAroundSprite(rotatingSprite, centerSprite, distance, angle) {
+	static rotateAroundSprite(rotatingSprite, centerSprite, distance, angle) {
 		rotatingSprite.x
 			= (centerSprite.x + this._getCenter(centerSprite, centerSprite.width, "x")) - rotatingSprite.parent.x
 			+ (distance * Math.cos(angle))
@@ -213,7 +241,7 @@ export default class Utils {
 
 	*/
 
-	rotateAroundPoint(pointX, pointY, distanceX, distanceY, angle) {
+	static rotateAroundPoint(pointX, pointY, distanceX, distanceY, angle) {
 		let point = {};
 		point.x = pointX + Math.cos(angle) * distanceX;
 		point.y = pointY + Math.sin(angle) * distanceY;
@@ -235,12 +263,8 @@ export default class Utils {
 
 	*/
 
-	randomInt(min, max) {
+	static randomInt(min, max) {
 		return Math.floor(Math.random() * (max - min + 1)) + min;
-	}
-
-	static random (min, max) {
-		return new Utils().randomInt(min, max);
 	}
 
 	/*
@@ -257,7 +281,7 @@ export default class Utils {
 
 	*/
 
-	randomFloat(min, max) {
+	static randomFloat(min, max) {
 		return min + Math.random() * (max - min);
 	}
 
@@ -272,7 +296,7 @@ export default class Utils {
 	
 	*/
 
-	wait(duration, callBack) {
+	static wait(duration, callBack) {
 		setTimeout(callBack, duration);
 	}
 
@@ -287,7 +311,7 @@ export default class Utils {
 			gu.move(sprite);
 	*/
 
-	move(...sprites) {
+	static move(...sprites) {
 
 		//Move sprites that's aren't in an array
 		if (!(sprites[0] instanceof Array)) {
@@ -328,7 +352,7 @@ export default class Utils {
 	The worldObject needs to have a `width` and `height` property.
 	*/
 
-	worldCamera(world, worldWidth, worldHeight, canvas) {
+	static worldCamera(world, worldWidth, worldHeight, canvas) {
 
 		//Define a `camera` object with helpful properties
 		let camera = {
@@ -431,7 +455,7 @@ export default class Utils {
 		
 		//Return the `camera` object 
 		return camera;
-	};
+	}
 
 	/*
 	Line of sight
@@ -461,7 +485,7 @@ export default class Utils {
 
 	*/
 
-	lineOfSight(
+	static lineOfSight(
 		s1, //The first sprite, with `centerX` and `centerY` properties
 		s2, //The second sprite, with `centerX` and `centerY` properties
 		obstacles, //An array of sprites which act as obstacles

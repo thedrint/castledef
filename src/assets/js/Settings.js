@@ -8,7 +8,7 @@ export const ApplicationSettings = {
 
 export const FPS = {
 	min    : 10, 
-	max    : 120, 
+	max    : 60, 
 	target : 60,
 };
 
@@ -54,6 +54,26 @@ export const Defaults = {
 			weaponColor : 0x999999,
 			shieldColor : 0x654321,
 		},
+	}, 
+	body : {
+		name : `Body`,
+		attrs : {
+			defend : 0,
+		}, 
+		model : {
+			size  : 1,
+			color : 0x00ff00,
+		}, 
+	}, 
+	helmet : {
+		name : `Helmet`,
+		attrs : {
+			defend : 0,
+		}, 
+		model : {
+			size  : 1,
+			color : 0x000000,
+		}, 
 	}, 
 	weapon : {
 		name : `Weapon`,
