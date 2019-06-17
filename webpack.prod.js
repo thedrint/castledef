@@ -48,7 +48,7 @@ module.exports = {
 						loader: 'url-loader',
 						options: {
 							context: srcData, name:'[path][name].[ext]',
-							limit: 128*1024,
+							limit: 128,
 						},
 					},
 				],
