@@ -4,9 +4,12 @@ import IntersectHelper from './../IntersectHelper';
 
 import { GameSettings, FPS, Defaults } from './../Settings';
 import Utils from './../Utils';
+
+import Graphics from './../base/Graphics';
+
 import Scene from './../Scene';
 
-export default class Helmet extends PIXI.Graphics {
+export default class Helmet extends Graphics {
 
 	constructor (settings = {
 		name  : Defaults.helmet.name, 

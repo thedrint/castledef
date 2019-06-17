@@ -3,12 +3,13 @@ import * as PIXI from 'pixi.js';
 import * as TWEEN from 'es6-tween';
 
 import { FPS } from './Settings';
+
 import SceneManager from './SceneManager';
 import Scene from './Scene';
+import LoadScene from './scenes/LoadScene';
 import MainScene from './scenes/MainScene';
 
 // console.log(PIXI);
-
 
 export default class Application extends PIXI.Application {
 
@@ -20,30 +21,20 @@ export default class Application extends PIXI.Application {
 	}
 
 	init () {
-		this.initTween();
+		this.textures = {};
+
 		this.initScenes();
 
-		this.ticker.add((dt) => { 
-			TWEEN.update();
-			this.stage.getCurrentScene().update();
-		});
-	}
-
-	initTween () {
-
+		this.ticker.add((dt) => { TWEEN.update(); this.stage.getCurrentScene().update(); });
 	}
 
 	initScenes () {
-		let scene = new MainScene("Main");
-		this.stage.add(scene);
-		scene.preload();
-		scene.create();
+		let loadScene = new LoadScene("LoadScene");
+		this.stage.add(loadScene);
 
-		// This is only example
-		let emptyScene = new Scene("Empty");
-		this.stage.add(emptyScene);
-		emptyScene.preload();
-		emptyScene.create();
+		let mainScene = new MainScene("MainScene");
+		this.stage.add(mainScene);
+
+		this.stage.switchTo("LoadScene");
 	}
-
 }

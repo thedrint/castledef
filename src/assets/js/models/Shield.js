@@ -4,9 +4,12 @@ import IntersectHelper from './../IntersectHelper';
 
 import { GameSettings, FPS, Defaults } from './../Settings';
 import Utils from './../Utils';
+
+import Container from './../base/Container';
+
 import Scene from './../Scene';
 
-export default class Shield extends PIXI.Graphics {
+export default class Shield extends Container {
 
 	constructor (settings = {
 		name  : Defaults.shield.name, 
@@ -35,13 +38,39 @@ export default class Shield extends PIXI.Graphics {
 		let plateHeight = 7;//TODO: Replace magic number with setting or formula
 
 		let models = [];
-		let plate = Scene.createShape(new PIXI.Rectangle(0, 0, plateWidth, plateHeight), params.color);
-		plate.name = `Plate`;
-		models.push(plate);
-		// let umbo = Scene.CreateShape(0, 0, 0, 0, shieldLength, 0, params.color);
-		// umbo.setOrigin(0.5);
-		// umbo.name = `Umbo`;
-		// models.push(umbo);
+		let plate;
+		if( params.texture && params.texture.baseTexture ) {
+
+			// console.log(params.texture);
+			let res = params.texture.baseTexture.resource;
+			let svgTexture = PIXI.BaseTexture.from(res);
+			// console.log(svgTexture);
+			svgTexture.setSize(plateWidth, res.height * plateWidth/res.width * 0.3);
+			// svgTexture.setSize(plateWidth, plateHeight);
+			// console.log(svgTexture);
+			let plateTexture = new PIXI.Texture(svgTexture);
+			// console.log(bladeTexture);
+			plate = PIXI.Sprite.from(plateTexture);
+			plate.anchor.set(0.5);
+			plate.pivot.x = 0.5 * plate.width;
+			plate.pivot.y = 0.5 * plate.height;
+			plate.rotation = Math.PI;
+			// plate.rotation = 0;
+			plate.name = `Plate`;
+			models.push(plate);
+		}
+		else {	
+			plate = Scene.createShape(new PIXI.Rectangle(0, 0, plateWidth, plateHeight), params.color);
+			// plate.pivot.x = 0.5 * plate.width;
+			// plate.pivot.y = 0.5 * plate.height;
+			plate.name = `Plate`;
+			models.push(plate);
+			// let umbo = Scene.CreateShape(0, 0, 0, 0, shieldLength, 0, params.color);
+			// umbo.setOrigin(0.5);
+			// umbo.name = `Umbo`;
+			// models.push(umbo);
+		}
+
 
 		this.addChild(...models);
 		this.pivot.x += 0.5 * plate.width;

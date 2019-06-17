@@ -2,14 +2,18 @@
 import * as PIXI from 'pixi.js';
 import Utils from './Utils';
 
-export default class Scene extends PIXI.Container {
+import Container from './base/Container';
+
+export default class Scene extends Container {
 
 	constructor (name, options = {}) {
 		super();
 		this.app = undefined;
 		this.name = name;
+	}
 
-		this.utils = new Utils();
+	init () {
+		console.log('Init Scene...');
 	}
 
 	preload () {}

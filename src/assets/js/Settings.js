@@ -1,9 +1,11 @@
 
+import Colors from './Colors';
+
 export const ApplicationSettings = {
 	width: 640,
-	height: 480,
+	height: 512,
 	autoStart: false, 
-	backgroundColor: 0xffffff,
+	backgroundColor: Colors.breeze,
 };
 
 export const FPS = {
@@ -49,10 +51,18 @@ export const Defaults = {
 		},
 		model : {
 			size        : GameSettings.unit.size,
-			armorColor  : 0x00ff00,
-			helmetColor : 0x000000,
-			weaponColor : 0x999999,
-			shieldColor : 0x654321,
+			colors      : {
+				armor     : Colors.green,
+				helmet    : Colors.black,
+				weapon    : Colors.metal,
+				shield    : Colors.brown,				
+			},
+			textures    : {
+				armor     : undefined,
+				helmet    : undefined,
+				weapon    : undefined,
+				shield    : undefined,				
+			},
 		},
 	}, 
 	body : {
@@ -62,7 +72,8 @@ export const Defaults = {
 		}, 
 		model : {
 			size  : 1,
-			color : 0x00ff00,
+			color : Colors.green,
+			texture: undefined,
 		}, 
 	}, 
 	helmet : {
@@ -72,7 +83,8 @@ export const Defaults = {
 		}, 
 		model : {
 			size  : 1,
-			color : 0x000000,
+			color : Colors.black,
+			texture: undefined,
 		}, 
 	}, 
 	weapon : {
@@ -82,7 +94,8 @@ export const Defaults = {
 		}, 
 		model : {
 			size  : 1,
-			color : 0x999999,
+			color : Colors.metal,
+			texture: undefined,
 		}, 
 	}, 
 	shield : {
@@ -91,8 +104,9 @@ export const Defaults = {
 			defend : 1,
 		}, 
 		model : {
-			size  : 1,
-			color : 0x654321,
+			size  : 0.75,
+			color : Colors.brown,
+			texture: undefined,
 		}, 
 	}, 
-}
+};

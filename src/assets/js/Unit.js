@@ -5,13 +5,16 @@ import IntersectHelper from './IntersectHelper';
 import { GameSettings, FPS, Defaults } from './Settings';
 
 import Utils from './Utils';
+
+import Container from './base/Container';
+
 import Scene from './Scene';
 import Body from './models/Body';
 import Helmet from './models/Helmet';
 import Weapon from './models/Weapon';
 import Shield from './models/Shield';
 
-export default class Unit extends PIXI.Container {
+export default class Unit extends Container {
 
 	constructor (settings = {
 		name: Defaults.unit.name, 
@@ -63,17 +66,19 @@ export default class Unit extends PIXI.Container {
 		let models = [];
 		//TODO: Make separate class Body or Armor
 		// let body = Scene.createShape(new PIXI.Ellipse(0, 0, radius, radius), params.armorColor);
-		let body = new Body({model:{color:params.armorColor}});
+		let body = new Body({model:{color:params.colors.armor}});
 		body.setTransform(0, 0);
 		models.push(body);
 
 		//TODO: Make separate class Helmet
-		let helmet = new Helmet({model:{color:params.helmetColor}});
+		let helmet = new Helmet({model:{color:params.colors.helmet}});
 		helmet.setTransform(0, 0);
 		models.push(helmet);
 
-		let weapon = new Weapon({model:{color:params.weaponColor}});
-		weapon.setTransform(0, params.size/2);
+		let weapon = new Weapon({model:{color:params.colors.weapon, texture: params.textures.weapon}});
+		weapon.x = 0;
+		weapon.y = params.size/2;
+		weapon.angle = -10;
 		models.push(weapon);
 
 		let bodyRadius = radius;
@@ -82,13 +87,16 @@ export default class Unit extends PIXI.Container {
 			x: bodyRadius*Math.sin(shieldAngle),
 			y: -bodyRadius*Math.cos(shieldAngle),
 		}
-		let shield = new Shield({model:{color:params.shieldColor}});
+		let shield = new Shield({model:{color:params.colors.shield, texture: params.textures.shield}});
 		shield.x = shieldDot.x;
 		shield.y = shieldDot.y;
 		shield.angle = shieldAngle;
 		models.push(shield);
 
 		this.addChild(...models);
+
+		this.pivot.x += params.size/2;
+		this.pivot.y += params.size/2;
 
 		this.shape = new IntersectHelper.Rectangle(this);
 	}
@@ -98,19 +106,19 @@ export default class Unit extends PIXI.Container {
 	}
 
 
-	getBody () {
+	get Body () {
 		return this.getChildByName('Body');
 	}
 
-	getHelmet () {
+	get Helmet () {
 		return this.getChildByName('Helmet');
 	}
 
-	getWeapon () {
+	get Weapon () {
 		return this.getChildByName('Weapon');
 	}
 
-	getShield () {
+	get Shield () {
 		return this.getChildByName('Shield');
 	}
 
@@ -179,4 +187,5 @@ export default class Unit extends PIXI.Container {
 
 		return closestEnemy;
 	}
+
 }

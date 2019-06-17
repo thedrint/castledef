@@ -1,4 +1,5 @@
 
+import * as PIXI from 'pixi.js';
 
 export default class Utils {
 
@@ -42,16 +43,43 @@ export default class Utils {
 
 	*/
 
-	static distanceBetween (o1, o2) {
-		let worldPos1 = o1.getGlobalPosition();
-		let worldPos2 = o2.getGlobalPosition();
-		return Math.sqrt(Math.pow(worldPos2.x-worldPos1.x, 2) + Math.pow(worldPos2.y-worldPos1.y, 2));
+	static distanceBetween (p1, p2) {
+		return Math.sqrt(Math.pow(p2.x-p1.x, 2) + Math.pow(p2.y-p1.y, 2));
 	}
 
 	static distance(s1, s2) {
 		let vx = (s2.x + this._getCenter(s2, s2.width, "x")) - (s1.x + this._getCenter(s1, s1.width, "x")),
 				vy = (s2.y + this._getCenter(s2, s2.height, "y")) - (s1.y + this._getCenter(s1, s1.height, "y"));
 		return Math.sqrt(vx * vx + vy * vy);
+	}
+
+	static getLocalCenter (o) {
+		let localCenter = new PIXI.Point();
+		// console.log(`${o.name} x,y`, o.x, o.y);
+		// console.log(`${o.name} pivot`, o.pivot);
+		
+		let b = o.getLocalBounds();
+		// console.log(`${o.name} localBounds`, b);
+		localCenter.set(b.x + b.width/2, b.y + b.height/2);
+		// console.log(`${o.name} localCenter`, localCenter);
+		return localCenter;
+	}
+
+	static getWorldCenter (o) {
+		// console.log(o);
+		let localCenter = this.getLocalCenter(o);
+		let worldCenter = new PIXI.Point();
+
+		
+
+		//TODO: I dont know how but it updates world transform of object and all starts to work
+		o.toGlobal(localCenter, worldCenter);
+		// o.worldTransform.apply(localCenter, worldCenter);
+
+		// console.log(`${o.name} worldTransform`, o.worldTransform);
+		// console.log(`${o.name} worldCenter`, worldCenter);
+
+		return worldCenter;
 	}
 
 	/*
@@ -121,8 +149,8 @@ export default class Utils {
 
 	static follow (follower, to, speed) {
 		//Figure out the distance between the sprites
-		let vx = (to.x) - (follower.x + this._getCenter(follower, follower.width, "x")),
-				vy = (to.y) - (follower.y + this._getCenter(follower, follower.height, "y")),
+		let vx = (to.x) - (follower.x),
+				vy = (to.y) - (follower.y),
 				distance = Math.sqrt(vx * vx + vy * vy);
 
 		//Move the follower if it's more than 1 move
@@ -131,6 +159,11 @@ export default class Utils {
 			follower.x += (vx / distance) * speed;
 			follower.y += (vy / distance) * speed;
 		}
+		if( distance - speed <= 1 ) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/*
@@ -175,6 +208,14 @@ export default class Utils {
 		);
 	}
 
+	static getPointAngle (p1, p2) {
+		// console.log(p1.x, p1.y, p2.x, p2.y);
+		return Math.atan2(
+			(p2.y - p1.y),
+			(p2.x - p1.x)
+		);
+	}
+
 	/*
 	_getCenter
 	----------
@@ -192,8 +233,14 @@ export default class Utils {
 				//console.log(o.anchor[axis])
 				return dimension / 2;
 			}
+		} else if (o.pivot !== undefined) {
+			if (o.pivot[axis] !== 0) {
+				return o.pivot[axis];
+			} else {
+				return dimension / 2;
+			}
 		} else {
-			return dimension; 
+			return dimension / 2;
 		}
 	}
 	

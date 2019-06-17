@@ -5,9 +5,12 @@ import IntersectHelper from './../IntersectHelper';
 
 import { GameSettings, FPS, Defaults } from './../Settings';
 import Utils from './../Utils';
+
+import Graphics from './../base/Graphics';
+
 import Scene from './../Scene';
 
-export default class Weapon extends PIXI.Graphics {
+export default class Weapon extends PIXI.Container {
 
 	constructor (settings = {
 		name: Defaults.weapon.name, 
@@ -29,6 +32,7 @@ export default class Weapon extends PIXI.Graphics {
 		this.initModel(model);
 
 		this.piercing = false;
+		this.collider = false;
 	}
 
 	initModel (model = Defaults.weapon.model) {
@@ -37,19 +41,34 @@ export default class Weapon extends PIXI.Graphics {
 		let bladeLength = params.size * GameSettings.unit.size;
 		let bladeWidth = 3;//TODO: Replace magic number with setting or formula
 
-		let guardWidth = bladeLength * 0.1;
-		let guardDepth = 1;
+		let guardWidth = bladeWidth + 3*2;
+		let guardDepth = 3;
 
 		let models = [];
-		//TODO: Ha-ha, rectangled blade like from orcs
-		let blade = Scene.createShape(new PIXI.Rectangle(0, 0, bladeLength, bladeWidth), params.color);
-		blade.name = `Blade`;
-		// blade.shape = new Intersects.Rectangle(blade);
-		models.push(blade);
-		// let guard = Scene.createShape(new PIXI.Rectangle(0, 0, guardWidth, guardDepth), params.color);
-		// guard.name = `Guard`;
-		// guard.shape = new Intersects.Rectangle(guard);
-		// model.push(guard);
+		let blade, bladeTexture;
+		if( params.texture && params.texture.baseTexture ) {
+			// console.log(params.texture);
+			let res = params.texture.baseTexture.resource;
+			
+			let svgTexture = PIXI.BaseTexture.from(res);
+			// console.log(svgTexture);
+			svgTexture.setSize(bladeLength, res.height * bladeLength/res.width);
+			let bladeTexture = new PIXI.Texture(svgTexture);
+			// bladeTexture.defaultAnchor = new PIXI.Point(0, bladeTexture.height/2);
+			blade = PIXI.Sprite.from(bladeTexture);
+			blade.name = `Blade`;
+			models.push(blade);
+		}
+		else {
+			blade = Scene.createShape(new PIXI.Rectangle(0, 0, bladeLength, bladeWidth), params.color);
+			blade.name = `Blade`;
+
+			let guard = Scene.createShape(new PIXI.Rectangle(bladeLength/4, -guardWidth/2, guardDepth, guardWidth), params.color);
+			guard.name = `Guard`;
+			models.push(guard);
+			models.push(blade);
+		}
+
 
 		this.addChild(...models);
 
@@ -63,7 +82,7 @@ export default class Weapon extends PIXI.Graphics {
 		return this.getBlade().width;
 	}
 
-	pierce (target, speed = 200) {
+	pierce (target, speed = 300) {
 		if( this.piercing )
 			return;
 		
@@ -78,12 +97,13 @@ export default class Weapon extends PIXI.Graphics {
 			// 	console.log(tween)
 			// })
 			.on('complete', () => {
-				// console.log(tween);
+				// console.log('Piercing complete');
 				this.piercing = false;
+				this.collider = false;
 			})
 			.start()
 		;
 
-		this.piercing = true;
+		this.piercing = tween;
 	}
 }

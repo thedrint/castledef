@@ -1,7 +1,9 @@
  import * as PIXI from 'pixi.js';
  import YyIntersects from 'yy-intersects';
+ import Utils from './Utils';
 
  export default class IntersectHelper {
+ 
  	static get Circle () {
  		return YyIntersects.Circle;
  	}
@@ -10,14 +12,25 @@
  	}
 
 	static getShapeCenter (displayObject) {
+		return Utils.getWorldCenter(displayObject);
+		
 		let localCenter = new PIXI.Point();
+		let worldCenter = new PIXI.Point();
+		
 		if( displayObject.shape instanceof this.Circle ) {
 			localCenter.set(0, 0);
 		}
 		else if ( displayObject.shape instanceof this.Rectangle ) {
 			localCenter.set(displayObject.width/2, displayObject.height/2);
 		}
-		let worldCenter = displayObject.worldTransform.apply(localCenter, new PIXI.Point());
+
+		//TODO: I dont know how but it updates world transform of object and all starts to work
+		displayObject.toGlobal(localCenter, worldCenter);
+
+		// console.log(`${displayObject.parent.name}'s ${displayObject.name} localCenter`, localCenter);
+		// console.log(`${displayObject.parent.name}'s ${displayObject.name} worldTransform`, displayObject.worldTransform);
+		// console.log(`${displayObject.parent.name}'s ${displayObject.name} worldCenter`, worldCenter);
+
 		return worldCenter;
 	}
 
@@ -49,11 +62,15 @@
 			};
 		}
 
-		// console.log(`${displayObject.name} shapeUpdates`, shapeUpdates);
+		// console.log(`${displayObject.parent.name}'s ${displayObject.name} shapeUpdates`, shapeUpdates);
 		
 		// .set() auto-updates AABB of object's shape
 		displayObject.shape.set(shapeUpdates);
 
 		// console.log(`${displayObject.name} updated shape`, displayObject.shape);
+	}
+
+	static updateShape (...displayObject) {
+		displayObject.forEach( (o) => this.updateIntersectShape(o) );
 	}
 }
