@@ -51,7 +51,6 @@ export default class Weapon extends PIXI.Container {
 			let res = params.texture.baseTexture.resource;
 			
 			let svgTexture = PIXI.BaseTexture.from(res);
-			// console.log(svgTexture);
 			svgTexture.setSize(bladeLength, res.height * bladeLength/res.width);
 			let bladeTexture = new PIXI.Texture(svgTexture);
 			// bladeTexture.defaultAnchor = new PIXI.Point(0, bladeTexture.height/2);
@@ -59,7 +58,7 @@ export default class Weapon extends PIXI.Container {
 			blade.name = `Blade`;
 			models.push(blade);
 		}
-		else {
+		else {// For compability
 			blade = Scene.createShape(new PIXI.Rectangle(0, 0, bladeLength, bladeWidth), params.color);
 			blade.name = `Blade`;
 

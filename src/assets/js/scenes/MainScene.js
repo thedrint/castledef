@@ -73,7 +73,7 @@ export default class MainScene extends Scene {
 		let BadGuy = new Unit(enemySettings);
 		this.drawChild(BadGuy, this.heroSpawnPoint.x+128, this.heroSpawnPoint.y+0);
 		BadGuy.angle = -135;
-		// this.drawBounds(BadGuy);
+		this.drawBounds(BadGuy);
 
 		// console.log(Utils.getWorldCenter(JohnWick));
 		// console.log(Utils.getWorldCenter(BadGuy));
@@ -95,13 +95,14 @@ export default class MainScene extends Scene {
 				return;
 
 			this.seekAndDestroy(fighter);
-			this.drawBounds(fighter);
-			this.drawBounds(fighter.Shield, Colors.metal);
-			this.drawBounds(fighter.Weapon, Colors.pink);
+			this.drawBounds(fighter)
+				.drawBounds(fighter.Shield, Colors.metal)
+				.drawBounds(fighter.Weapon, Colors.pink)
+			;
 
 			// Example of dynamic switching scene
-			// if( fighter.rotation >= 2 ) {
-			// 	this.app.stage.switchTo("Empty");
+			// if( fighter.isDied() ) {
+			// 	this.app.stage.switchTo("GameOver");
 			// }
 		});
 	}
@@ -125,8 +126,6 @@ export default class MainScene extends Scene {
 			fighter.Weapon.pierce(enemy);
 		}
 
-		// IntersectHelper.updateIntersectShape(fighter);
-		// IntersectHelper.updateIntersectShape(enemy);
 		this.clash(fighter, closest);
 	}
 
@@ -202,9 +201,10 @@ export default class MainScene extends Scene {
 			if( enemy.isDied() ) {
 				
 				setTimeout(() => {
-					this.removeBounds(enemy);
-					this.removeBounds(enemy.Weapon);
-					this.removeBounds(enemy.Shield);
+					this.removeBounds(enemy)
+						.removeBounds(enemy.Weapon)
+						.removeBounds(enemy.Shield)
+					;
 					this.fighters.delete(enemy);
 					enemy.destroy();
 				}, 1000)
@@ -262,31 +262,30 @@ export default class MainScene extends Scene {
 			fighter.rotation = Utils.angle(fighter, enemy);	
 	}
 
-	drawBounds (displayObject, color = Colors.red) {
-		if( !displayObject.boundsHelper ) {
-			displayObject.boundsHelper = new PIXI.Graphics();
-			displayObject.boundsHelper.name = 'BoundsHelper';
-			this.addChild(displayObject.boundsHelper);		
+	drawBounds (o, color = Colors.red) {
+		if( !o.boundsHelper ) {
+			o.boundsHelper = new PIXI.Graphics();
+			o.boundsHelper.name = 'BoundsHelper';
+			this.addChild(o.boundsHelper);		
 		}
 
-		displayObject.boundsHelper.clear();
-		displayObject.boundsHelper.lineStyle(1, color);
-		let b = displayObject.getLocalBounds();
-		let lc = new PIXI.Point(displayObject.x, displayObject.y);
-		let wc = new PIXI.Point();
-		displayObject.toGlobal(lc, wc);
-		// let b = new PIXI.Rectangle(lc.x, lc.y, displayObject.width, displayObject.height);
-		let d = displayObject.worldTransform.decompose(new PIXI.Transform());
-		displayObject.boundsHelper.drawShape(b);
-		displayObject.boundsHelper.setTransform(d.position.x, d.position.y, d.scale.x, d.scale.y, d.rotation, d.skew.x, d.skew.y, d.pivot.x, d.pivot.y);
-		// displayObject.boundsHelper.position = d.position;
-		// displayObject.boundsHelper.rotation = d.rotation;
+		o.boundsHelper.clear();
+		o.boundsHelper.lineStyle(1, color);
+		o.toGlobal(new PIXI.Point(o.x, o.y));
+		let b = o.getLocalBounds();
+		let d = o.worldTransform.decompose(new PIXI.Transform());
+		o.boundsHelper.drawShape(b);
+		o.boundsHelper.setTransform(d.position.x, d.position.y, d.scale.x, d.scale.y, d.rotation, d.skew.x, d.skew.y, d.pivot.x, d.pivot.y);
+
+		return this;
 	}
 
-	removeBounds (displayObject) {
-		if( displayObject.boundsHelper ) {
-			displayObject.boundsHelper.destroy();
+	removeBounds (o) {
+		if( o.boundsHelper ) {
+			o.boundsHelper.destroy();
 		}
+
+		return this;
 	}
 
 	drawCoords (step = 64) {
@@ -309,12 +308,16 @@ export default class MainScene extends Scene {
 			this.coordHelper.lineTo(this.app.screen.width, y);
 			y += step;
 		}
+
+		return this;
 	}
 
 	removeCoords () {
 		if( this.coordHelper ) {
 			this.coordHelper.destroy();
 		}
+
+		return this;
 	}
 
 	testObjects () {

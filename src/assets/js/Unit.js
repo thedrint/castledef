@@ -64,13 +64,11 @@ export default class Unit extends Container {
 		let radius = params.size/2;
 
 		let models = [];
-		//TODO: Make separate class Body or Armor
 		// let body = Scene.createShape(new PIXI.Ellipse(0, 0, radius, radius), params.armorColor);
 		let body = new Body({model:{color:params.colors.armor}});
 		body.setTransform(0, 0);
 		models.push(body);
 
-		//TODO: Make separate class Helmet
 		let helmet = new Helmet({model:{color:params.colors.helmet}});
 		helmet.setTransform(0, 0);
 		models.push(helmet);

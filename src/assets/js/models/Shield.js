@@ -41,15 +41,10 @@ export default class Shield extends Container {
 		let plate;
 		if( params.texture && params.texture.baseTexture ) {
 
-			// console.log(params.texture);
 			let res = params.texture.baseTexture.resource;
 			let svgTexture = PIXI.BaseTexture.from(res);
-			// console.log(svgTexture);
-			svgTexture.setSize(plateWidth, res.height * plateWidth/res.width * 0.3);
-			// svgTexture.setSize(plateWidth, plateHeight);
-			// console.log(svgTexture);
+			svgTexture.setSize(plateWidth, res.height * plateWidth/res.width * 0.4);
 			let plateTexture = new PIXI.Texture(svgTexture);
-			// console.log(bladeTexture);
 			plate = PIXI.Sprite.from(plateTexture);
 			plate.anchor.set(0.5);
 			plate.pivot.x = 0.5 * plate.width;
