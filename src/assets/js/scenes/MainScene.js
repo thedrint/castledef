@@ -10,42 +10,30 @@ import Unit from './../Unit';
 import Hero from './../Hero';
 
 import Utils from './../Utils';
-// load sprites
-// import KnightImage from './../../img/knight.png';
-// import SwordImage from './../../img/SwordBig.svg';
-import ShieldImage from './../../img/Shield.svg';
-import RoundShieldImage from './../../img/RoundShield.svg';
 
 export default class MainScene extends Scene {
 
 	constructor (name, options = {}) {
 		super(name, options);
-		this.initObjects();
 	}
 
 	init () {
-		this.resourceLoadingProgress = 0;
+		this.initObjects();
 	}
 
 	preload () {
-		console.log('MainScene preload()');
-		let loader = PIXI.Loader.shared;
-		const textures = {};
+		// this.resourceLoadingProgress = 0;
+		// console.log('MainScene preload()');
+		// let loader = PIXI.Loader.shared;
+		// const textures = {};
 
-		// loader.add('SwordBig', SwordImage);
-		loader.add('Shield', ShieldImage);
-		loader.add('RoundShield', RoundShieldImage);
+		// loader.load((loader, resources) => {
+		// 	Object.assign(this.app.textures, textures);
+		// });
 
-		loader.load((loader, resources) => {
-			// textures.SwordBig = resources.SwordBig.texture;
-			textures.Shield = resources.Shield.texture;
-			textures.RoundShield = resources.RoundShield.texture;
-			Object.assign(this.app.textures, textures);
-		});
-
-		loader.onProgress.add((loader) => {
-			this.resourceLoadingProgress = loader.progress;
-		});
+		// loader.onProgress.add((loader) => {
+		// 	this.resourceLoadingProgress = loader.progress;
+		// });
 	}
 
 	create () {

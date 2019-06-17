@@ -10,7 +10,8 @@ import Utils from './../Utils';
 // load sprites
 // import KnightImage from './../../img/knight.png';
 import SwordImage from './../../img/Sword.svg';
-import ShortSwordImage from './../../img/shortsword.jpg';
+import ShieldImage from './../../img/Shield.svg';
+import RoundShieldImage from './../../img/RoundShield.svg';
 
 export default class LoadScene extends Scene {
 
@@ -28,12 +29,14 @@ export default class LoadScene extends Scene {
 		const textures = {};
 
 		loader.add('Sword', SwordImage);
-		loader.add('ShortSword', ShortSwordImage);
+		loader.add('Shield', ShieldImage);
+		loader.add('RoundShield', RoundShieldImage);
 
 		loader.load((loader, resources) => {
 			textures.Sword = resources.Sword.texture;
+			textures.Shield = resources.Shield.texture;
+			textures.RoundShield = resources.RoundShield.texture;
 			Object.assign(this.app.textures, textures);
-			// console.log(this.app.textures);
 		});
 
 		loader.onProgress.add((loader) => {
