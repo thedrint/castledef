@@ -3,7 +3,7 @@ import * as PIXI from 'pixi.js';
 import IntersectHelper from './../IntersectHelper';
 
 import Colors from './../Colors';
-import { ApplicationSettings, FPS, GameSettings } from './../Settings';
+import {Game as GameSettings, FPS} from './../Settings';
 
 import Scene from './../Scene';
 import Unit from './../Unit';
@@ -22,6 +22,7 @@ export default class MainScene extends Scene {
 	}
 
 	preload () {
+
 		// this.resourceLoadingProgress = 0;
 		// console.log('MainScene preload()');
 		// let loader = PIXI.Loader.shared;
@@ -222,19 +223,17 @@ export default class MainScene extends Scene {
 
 					let newBadGuy = new Unit(enemySettings);
 					
-					let x = Utils.randomInt(64, ApplicationSettings.width - 64);
+					let appW = this.app.screen.width;
+					let appH = this.app.screen.height;
+					let x = Utils.randomInt(64, appW - 64);
 					let y;
 					if( x <= this.heroSpawnPoint.x+128 ) {
-						y = Utils.randomInt(ApplicationSettings.height - 256, ApplicationSettings.height - 64);
+						y = Utils.randomInt(appH - 256, appH - 64);
 					}
 					else {
-						y = Utils.randomInt(64, ApplicationSettings.height - 64)
+						y = Utils.randomInt(64, appH - 64)
 					}
-					let randomPoint = {
-						x: x,
-						y: y,
-					};
-					this.drawChild(newBadGuy, randomPoint.x, randomPoint.y);
+					this.drawChild(newBadGuy, x, y);
 					
 					this.fighters.add(newBadGuy);
 
@@ -244,7 +243,7 @@ export default class MainScene extends Scene {
 			}
 			// Start a fight
 		}
-		if( fighter instanceof Hero && (closest.distance >= 64) ){
+		if( closest.distance >= GameSettings.unit.size ){
 			fighter.followTo(enemy, fighter.getSpeed()/FPS.target);
 			return;
 		}
@@ -255,11 +254,6 @@ export default class MainScene extends Scene {
 	 */
 	initObjects () {
 		this.fighters = new Set();
-	}
-
-	moveTo (fighter, enemy) {
-			Utils.followConstant(fighter, enemy, fighter.getSpeed()/FPS.target / 2);
-			fighter.rotation = Utils.angle(fighter, enemy);	
 	}
 
 	drawBounds (o, color = Colors.red) {

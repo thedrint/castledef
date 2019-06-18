@@ -1,7 +1,7 @@
 
 import Colors from './Colors';
 
-export const ApplicationSettings = {
+export const Application = {
 	width: 640,
 	height: 512,
 	autoStart: false, 
@@ -14,7 +14,7 @@ export const FPS = {
 	target : 60,
 };
 
-export const GameSettings = {
+export const Game = {
 	title: `CastleDef`,
 	version: `0.0.1-pixi`,
 	unit: {
@@ -50,7 +50,7 @@ export const Defaults = {
 			arms    : undefined,
 		},
 		model : {
-			size        : GameSettings.unit.size,
+			size        : Game.unit.size,
 			colors      : {
 				armor     : Colors.green,
 				helmet    : Colors.black,
@@ -109,4 +109,10 @@ export const Defaults = {
 			texture: undefined,
 		}, 
 	}, 
+};
+
+export const WebFont = {
+	google: {
+		families: ['Droid Sans'],
+	},
 };

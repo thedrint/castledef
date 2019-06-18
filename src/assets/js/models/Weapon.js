@@ -3,7 +3,7 @@ import * as PIXI from 'pixi.js';
 import * as TWEEN from 'es6-tween';
 import IntersectHelper from './../IntersectHelper';
 
-import { GameSettings, FPS, Defaults } from './../Settings';
+import { Game as GameSettings, Defaults } from './../Settings';
 import Utils from './../Utils';
 
 import Graphics from './../base/Graphics';

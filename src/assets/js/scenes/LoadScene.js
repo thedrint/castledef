@@ -1,8 +1,8 @@
 
 import * as PIXI from 'pixi.js';
+import WebFont from 'webfontloader';
 
 import Colors from './../Colors';
-import { ApplicationSettings, FPS, GameSettings } from './../Settings';
 
 import Scene from './../Scene';
 

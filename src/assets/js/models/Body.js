@@ -2,7 +2,7 @@
 import * as PIXI from 'pixi.js';
 import IntersectHelper from './../IntersectHelper';
 
-import { GameSettings, FPS, Defaults } from './../Settings';
+import { Game as GameSettings, Defaults } from './../Settings';
 import Utils from './../Utils';
 
 import Graphics from './../base/Graphics';
