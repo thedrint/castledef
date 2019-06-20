@@ -1,17 +1,21 @@
 
 import * as PIXI from 'pixi.js';
-import WebFont from 'webfontloader';
+
+import { WebFont as WebFontConfig } from './../Settings';
 
 import Colors from './../Colors';
 
 import Scene from './../Scene';
 
 import Utils from './../Utils';
+
 // load sprites
-// import KnightImage from './../../img/knight.png';
-import SwordImage from './../../img/Sword.svg';
-import ShieldImage from './../../img/Shield.svg';
-import RoundShieldImage from './../../img/RoundShield.svg';
+import { Textures as ImageTextures } from './../../img/Textures';
+
+import 'reset-css';
+
+// Local loading of font - have a bug in rendering, use Webfont instead
+// import './../../fonts/PressStart2P.css';
 
 export default class LoadScene extends Scene {
 
@@ -25,23 +29,45 @@ export default class LoadScene extends Scene {
 	preload () {
 		this.resourceLoadingProgress = 0;
 		console.log('SceneLoad preload()');
+		this.preloadWebfonts();
+		// this.preloadResources();
+	}
+
+	preloadWebfonts () {
+		let fonts = this.app.fonts;
+		// Loading fonts first
+		let fontsLoading = Object.assign(WebFontConfig, {
+			active: () => {
+				// Then loading other resources
+				this.fontsLoaded = true;
+
+				this.preloadResources();
+			}
+		});
+		fonts.load(fontsLoading);
+
+	}
+
+	preloadResources () {
 		let loader = PIXI.Loader.shared;
 		const textures = {};
 
-		loader.add('Sword', SwordImage);
-		loader.add('Shield', ShieldImage);
-		loader.add('RoundShield', RoundShieldImage);
+		for( let i in ImageTextures ) {
+			loader.add(i, ImageTextures[i]);
+		}
 
 		loader.load((loader, resources) => {
-			textures.Sword = resources.Sword.texture;
-			textures.Shield = resources.Shield.texture;
-			textures.RoundShield = resources.RoundShield.texture;
+			for( let i in resources ) {
+				let key = resources[i].name;
+				textures[key] = resources[i].texture;
+			}
 			Object.assign(this.app.textures, textures);
 		});
 
 		loader.onProgress.add((loader) => {
 			// this.resourceLoadingProgress = loader.progress;
 		});
+
 	}
 
 	create () {
@@ -76,12 +102,23 @@ export default class LoadScene extends Scene {
 			let progress = Scene.createShape(progShape, Colors.green);
 			progress.name = 'Progress';
 
-			progressBar.addChild(background, progress);
-			progress.visible = false;
+			let text = new PIXI.Text(`${loadingProgress}%`, {
+				fontFamily : 'Press Start 2P', fontWeight: 400, fontSize: h/2, lineHeight: h/2, 
+				fill : Colors.black, 
+				align : `center`,
+			});
+			text.name = 'Text';
+			text.anchor.set(0.5);
+
+			progressBar.addChild(background, progress, text);
 			this.addChild(progressBar);
+
+			progress.visible = false;
 
 			progressBar.x = (this.app.screen.width - w) / 2;
 			progressBar.y = this.app.screen.height/2 - h/2;
+			text.y = h/2;
+			text.x = w/2;
 
 			this.progressBar = progressBar;
 			this.lastProgress = loadingProgress;
@@ -100,6 +137,13 @@ export default class LoadScene extends Scene {
 			progress.drawShape(progShape);
 			progress.endFill();
 			progress.visible = true;
+
+			// Redraw only for tens
+			if( loadingProgress%10 == 0 ) {
+				let text = this.progressBar.getChildByName('Text');
+				text.text = `${loadingProgress}%`;
+				text.visible = true;
+			}
 
 			this.lastProgress = loadingProgress;
 		}

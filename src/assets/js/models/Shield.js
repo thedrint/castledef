@@ -74,10 +74,7 @@ export default class Shield extends Container {
 		this.shape = new IntersectHelper.Rectangle(this);
 	}
 
-	getPlate () {
+	getModel () {
 		return this.getChildByName('Plate');
-	}
-	getWidth () {
-		return this.getPlate().width;
 	}
 }

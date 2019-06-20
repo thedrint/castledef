@@ -49,11 +49,8 @@ export default class Helmet extends Graphics {
 		this.shape = new IntersectHelper.Circle(this);
 	}
 
-	getHelmet () {
+	getModel () {
 		return this.getChildByName('Helmet');
 	}
 
-	getWidth () {
-		return this.width;
-	}
 }

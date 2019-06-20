@@ -1,0 +1,21 @@
+<svg version="1" xmlns="http://www.w3.org/2000/svg" width="256" height="32">
+
+	<defs>
+
+		<rect id="BowStringShape" width="248" height="1"/>
+
+		<path id="BowShaftShape" 
+			d="m 0 32 
+			Q 128 -32 256 32
+			Q 128 -16 0 32
+			z"
+		/>
+
+	</defs>
+
+	<g id="Bow" transform="scale(0.25)">
+		<use href="#BowShaftShape" fill="black"/>
+		<use href="#BowStringShape" fill="black" x="4" y="30"/>
+	</g>
+
+</svg>

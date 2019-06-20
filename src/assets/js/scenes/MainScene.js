@@ -8,6 +8,9 @@ import {Game as GameSettings, FPS} from './../Settings';
 import Scene from './../Scene';
 import Unit from './../Unit';
 import Hero from './../Hero';
+import Party from './../Party';
+import PartyManager from './../PartyManager';
+import Crate from './../models/Crate';
 
 import Utils from './../Utils';
 
@@ -18,7 +21,7 @@ export default class MainScene extends Scene {
 	}
 
 	init () {
-		this.initObjects();
+		this.initGameObjects();
 	}
 
 	preload () {
@@ -39,9 +42,10 @@ export default class MainScene extends Scene {
 
 	create () {
 
-		this.drawCoords();
+		let grass = new PIXI.TilingSprite(this.app.textures.Grass, this.app.screen.width, this.app.screen.height);
+		this.addChild(grass);
 
-		this.heroSpawnPoint = new PIXI.Point(128, 128);
+		this.drawCoords(16);
 
 		let heroSettings = {
 			name  :`John Wick`, 
@@ -55,11 +59,31 @@ export default class MainScene extends Scene {
 			}
 		};
 		let JohnWick = new Hero(heroSettings);
-		this.drawChild(JohnWick, this.heroSpawnPoint.x, this.heroSpawnPoint.y);
+		JohnWick.spawnPoint = new PIXI.Point(128, 128);
+		this.drawChild(JohnWick, JohnWick.spawnPoint.x, JohnWick.spawnPoint.y);
 		// JohnWick.angle = 45;
 		this.drawBounds(JohnWick);
 		// console.log(JohnWick);
 		// JohnWick.Weapon.pierce();
+		
+		// Let add another hero
+		
+		heroSettings = {
+			name  :`Baba Yaga`, 
+			attrs : {lvl:10, attack:10, immortal:true},
+			model: {
+				colors: {armor: Colors.monokai},
+				textures: {
+					weapon: this.app.textures.Sword, 
+					shield: this.app.textures.Shield, 
+				},
+			}
+		};
+		let BabaYaga = new Hero(heroSettings);
+		BabaYaga.spawnPoint = new PIXI.Point(JohnWick.spawnPoint.x, JohnWick.spawnPoint.y+128);
+		this.drawChild(BabaYaga, BabaYaga.spawnPoint.x, BabaYaga.spawnPoint.y);
+		// JohnWick.angle = 45;
+		this.drawBounds(BabaYaga);
 
 
 		let enemySettings = {name:`Bad Guy`, 
@@ -72,7 +96,7 @@ export default class MainScene extends Scene {
 			},
 		};
 		let BadGuy = new Unit(enemySettings);
-		this.drawChild(BadGuy, this.heroSpawnPoint.x+128, this.heroSpawnPoint.y+0);
+		this.drawChild(BadGuy, JohnWick.spawnPoint.x+128, JohnWick.spawnPoint.y+0);
 		BadGuy.angle = -135;
 		this.drawBounds(BadGuy);
 
@@ -86,7 +110,39 @@ export default class MainScene extends Scene {
 		// console.log(JohnWick.shape.collidesRectangle(BadGuy.shape));
 		// console.log(this.getIntersects(JohnWick, BadGuy));
 		
-		this.fighters.add(JohnWick).add(BadGuy);
+		this.fighters
+			.add(JohnWick)
+			.add(BabaYaga)
+			.add(BadGuy)
+		;
+
+		let cratesOnScene = [
+			[128+64, 128],
+			[128, 128+192],
+			[256+192, 256],
+			[256+64, 256+128],
+		];
+		cratesOnScene.forEach( (coords, i) => {
+			let [x,y] = coords;
+			let crate = new Crate({
+				name: `Crate #${i}`,
+				model: {
+					texture: this.app.textures.Crate,
+				},
+			});
+			this.drawChild(crate, x, y);
+			crate.angle = Utils.randomInt(0, 90);
+		});
+
+
+		// Create parties for our enemies
+		// let heroPartyUnits = new Set([BabaYaga]);
+		let HeroParty = new Party({name:'Heroes', faction: 'Good'}, JohnWick, new Set([BabaYaga]));
+		let EnemyParty = new Party({name:'Enemies', faction: 'Evil'}, BadGuy);
+		this.party
+			.add(HeroParty)
+			.add(EnemyParty)
+		;
 	}
 
 
@@ -109,22 +165,18 @@ export default class MainScene extends Scene {
 	}
 
 	seekAndDestroy (fighter) {
-		let closest = fighter.getClosestEnemy();
-		if( fighter instanceof Hero && !closest ) {
+		let closest = fighter.getClosest();
+		if( fighter instanceof Hero && !closest.enemy ) {
 			fighter.Body.alpha = 1;
 			fighter.Shield.alpha = 1;
 
-			fighter.followTo(this.heroSpawnPoint, fighter.getSpeed()/FPS.target);
+			fighter.followTo(fighter.spawnPoint, fighter.getSpeed()/FPS.target);
 
 			return;
 		}
 
-		let enemy = closest.enemy;
-
-		// console.log(closest.distance);
-
-		if( fighter instanceof Hero && closest.distance <= fighter.Weapon.getLength()*2.5 ) {
-			fighter.Weapon.pierce(enemy);
+		if( fighter instanceof Hero && closest.enemy.distance <= fighter.Weapon.getLength()*2.5 ) {
+			fighter.Weapon.pierce(closest.enemy.unit);
 		}
 
 		this.clash(fighter, closest);
@@ -163,7 +215,7 @@ export default class MainScene extends Scene {
 
 	clash (fighter, closest) {
 
-		let enemy = closest.enemy;
+		let enemy = closest.enemy.unit;
 		let collides = this.getFighterIntersects(fighter, enemy);
 		let isInterects = false;
 		// console.log(collides);
@@ -201,58 +253,66 @@ export default class MainScene extends Scene {
 
 			if( enemy.isDied() ) {
 				
-				setTimeout(() => {
-					this.removeBounds(enemy)
-						.removeBounds(enemy.Weapon)
-						.removeBounds(enemy.Shield)
-					;
-					this.fighters.delete(enemy);
-					enemy.destroy();
-				}, 1000)
+				this.removeBounds(enemy)
+					.removeBounds(enemy.Weapon)
+					.removeBounds(enemy.Shield)
+				;
+				enemy.party.disbandUnit(enemy);
+				this.fighters.delete(enemy);
+				enemy.destroy();
 
-				setTimeout(() => {
-					let enemySettings = {name:`Bad Guy`, 
-						attrs: {lvl:10, attack:5},
-						model: {
-							textures: {
-								weapon: this.app.textures.Sword, 
-								shield: this.app.textures.RoundShield, 
-							},
+				let enemySettings = {name:`Bad Guy`, 
+					attrs: {lvl:10, attack:5},
+					model: {
+						textures: {
+							weapon: this.app.textures.Sword, 
+							shield: this.app.textures.RoundShield, 
 						},
-					};
+					},
+				};
 
-					let newBadGuy = new Unit(enemySettings);
-					
-					let appW = this.app.screen.width;
-					let appH = this.app.screen.height;
-					let x = Utils.randomInt(64, appW - 64);
-					let y;
-					if( x <= this.heroSpawnPoint.x+128 ) {
-						y = Utils.randomInt(appH - 256, appH - 64);
-					}
-					else {
-						y = Utils.randomInt(64, appH - 64)
-					}
-					this.drawChild(newBadGuy, x, y);
-					
-					this.fighters.add(newBadGuy);
+				let newBadGuy = new Unit(enemySettings);
+				
+				let appW = this.app.screen.width;
+				let appH = this.app.screen.height;
+				let x = Utils.randomInt(256, appW - 64);
+				let y = Utils.randomInt(64, appH - 64);
+				this.drawChild(newBadGuy, x, y);
+				
+				this.fighters.add(newBadGuy);
 
-				}, 5000);
+				this.party.get('Enemies').hireUnit(newBadGuy);
+
 				return;
 				
 			}
 			// Start a fight
 		}
-		if( closest.distance >= GameSettings.unit.size ){
+
+		let enemyFar = closest.enemy.distance >= GameSettings.unit.size;
+		let friend = closest.friend;
+		let friendFar = friend && (friend.distance >= GameSettings.unit.size);
+		// If both nearest enemy and friend too far - move to enemy
+		if( enemyFar && friendFar ){
 			fighter.followTo(enemy, fighter.getSpeed()/FPS.target);
 			return;
+		}
+		// If enemy too far but friend in close range - make step backward from friend to get more space for moves
+		else if( friend && !friendFar && enemyFar ) {
+			let speed = fighter.getSpeed()/FPS.target;
+			let backwardPosition = new PIXI.Point(
+				fighter.x - Math.sign(friend.x-fighter.x)*speed, 
+				fighter.y - Math.sign(friend.y-fighter.y)*speed, 
+			);
+			fighter.followTo(backwardPosition, speed);
 		}
 	}
 	/**
 	 * Init internal scene objects
 	 * @return none
 	 */
-	initObjects () {
+	initGameObjects () {
+		this.party = new PartyManager(this);
 		this.fighters = new Set();
 	}
 

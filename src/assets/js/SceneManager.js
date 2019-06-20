@@ -98,6 +98,7 @@ export default class SceneManager extends PIXI.Container {
 		}
 
 		let loader = PIXI.Loader.shared;
+		let fonts = this.app.fonts;
 
 		if( loader && scene.preload ) {
 			scene.preload.call(scene);

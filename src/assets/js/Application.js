@@ -1,15 +1,11 @@
 
 import * as PIXI from 'pixi.js';
 import * as TWEEN from 'es6-tween';
-
-import { FPS } from './Settings';
+import WebFont from 'webfontloader';
 
 import SceneManager from './SceneManager';
-import Scene from './Scene';
 import LoadScene from './scenes/LoadScene';
 import MainScene from './scenes/MainScene';
-
-// console.log(PIXI);
 
 export default class Application extends PIXI.Application {
 
@@ -17,6 +13,7 @@ export default class Application extends PIXI.Application {
 		super(options);
 		document.body.appendChild(this.view);
 		this.stage = new SceneManager(this);
+		this.fonts = WebFont;
 		this.stop();
 	}
 

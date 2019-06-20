@@ -39,16 +39,24 @@ module.exports = {
 		rules:
 		[
 			{
-				test: /\.(png|jpe?g|gif|svg)$/,
-				include: path.resolve(__dirname, `${srcData}/assets/img`),
+				test: /\.(ttf|png|jpe?g|gif|svg)$/,
+				include: path.resolve(__dirname, srcData),
 				use: [
 					{
 						loader: 'url-loader',
 						options: {
 							context: srcData, name:'[path][name].[ext]',
-							limit: 128*1024,
+							limit: 128,
 						},
 					},
+				],
+			},
+			{
+				test: /\.(css)$/,
+				// include: path.resolve(__dirname, srcData),
+				use: [
+					'style-loader',
+					'css-loader',
 				],
 			},
 		],

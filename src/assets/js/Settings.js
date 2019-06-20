@@ -1,4 +1,5 @@
 
+import {UNIT} from './Constants';
 import Colors from './Colors';
 
 export const Application = {
@@ -25,6 +26,7 @@ export const Game = {
 export const Defaults = {
 	unit: {
 		name: 'John Doe', 
+		spec: UNIT.SPECIALIZATION.INFANTRY, 
 		attrs : {
 			immortal : false,
 			lvl      : 0,
@@ -41,7 +43,10 @@ export const Defaults = {
 		},
 		equipment : {
 			head    : undefined,
-			hands   : undefined,
+			hands   : {
+				right : undefined,
+				left  : undefined,
+			},
 			fingers : undefined,
 			foots   : undefined,
 			neck    : undefined,
@@ -109,10 +114,26 @@ export const Defaults = {
 			texture: undefined,
 		}, 
 	}, 
+	crate : {
+		name : `Crate`,
+		attrs : {
+			defend : 1000,
+		}, 
+		model : {
+			size  : 1,
+			color : Colors.brown,
+			texture: undefined,
+		}, 
+	}, 
+	party : {
+		name   : 'Bandits',
+		faction : 'Bandits', 
+		color   : Colors.red, 
+	}
 };
 
 export const WebFont = {
 	google: {
-		families: ['Droid Sans'],
+		families: ['Press Start 2P:latin,cyrillic'],
 	},
 };

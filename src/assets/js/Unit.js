@@ -16,29 +16,34 @@ import Shield from './models/Shield';
 
 export default class Unit extends Container {
 
-	constructor (settings = {
-		name: Defaults.unit.name, 
-		attrs: Defaults.unit.attrs, 
-		skills: Defaults.unit.skills, 
-		equipment: Defaults.unit.equipment,
-		model: Defaults.unit.model, 
-	}) {
+	constructor (settings = Defaults.unit) {
 
 		super();
 
 		let { 
 			name      = Defaults.unit.name, 
+			spec      = Defaults.unit.spec, 
 			attrs     = Defaults.unit.attrs, 
 			skills    = Defaults.unit.skills, 
 			equipment = Defaults.unit.equipment,
 			model     = Defaults.unit.model, 
 		} = settings;
 		this.name = name;
+		this.spec = spec;
+		this.division = undefined;
+		this.party = undefined;
+
+		this.init();
 
 		this.initAttrs(attrs);
 		this.initSkills(skills);
 		this.initEquipment(equipment);
 		this.initModel(model);
+	}
+
+	init () {
+		this._righthand = undefined;
+		this._lefthand  = undefined;
 	}
 
 	initAttrs (attrs = Defaults.unit.attrs) {
@@ -77,6 +82,7 @@ export default class Unit extends Container {
 		weapon.x = 0;
 		weapon.y = params.size/2;
 		weapon.angle = -10;
+		this.rightHand = weapon;
 		models.push(weapon);
 
 		let bodyRadius = radius;
@@ -89,6 +95,7 @@ export default class Unit extends Container {
 		shield.x = shieldDot.x;
 		shield.y = shieldDot.y;
 		shield.angle = shieldAngle;
+		this.leftHand = shield;
 		models.push(shield);
 
 		this.addChild(...models);
@@ -97,6 +104,22 @@ export default class Unit extends Container {
 		this.pivot.y += params.size/2;
 
 		this.shape = new IntersectHelper.Rectangle(this);
+	}
+
+	get rightHand () {
+		return this._righthand;
+	}
+
+	set rightHand (item) {
+		this._righthand = item;
+	}
+
+	get leftHand () {
+		return this._lefthand;
+	}
+
+	set leftHand (item) {
+		this._lefthand = item;
 	}
 
 	isReady () {
@@ -170,20 +193,42 @@ export default class Unit extends Container {
 		return baseSpeed;
 	}
 
-	getClosestEnemy () {
-		let closestEnemy = undefined;
-		for( let enemy of this.scene.fighters ) {
-			if( enemy == this || enemy.isDied() )
+	getClosest () {
+		let closest = {enemy:undefined, friend:undefined};
+
+		for( let unit of this.scene.fighters ) {
+			if( unit == this || unit.isDied() )
 				continue;
 
-			let distance = Utils.distance(this, enemy);
-			if( !closestEnemy )
-				closestEnemy = {enemy, distance};
-			if( closestEnemy.distance > distance )
-				closestEnemy = {enemy, distance};
+			let distance = Utils.distance(this, unit);
+			let isEnemy = ( unit.party != this.party );
+			if( isEnemy ) {
+				if( !closest.enemy || closest.enemy.distance > distance ) {
+					closest.enemy = {unit, distance};
+				}
+			}
+			else {
+				if( !closest.friend || closest.friend.distance > distance ) {
+					closest.friend = {unit, distance};
+				}
+			}
 		}
 
-		return closestEnemy;
+		return closest;
+	}
+
+	getClosestFriend () {
+		let closest = undefined;
+		for( let unit of this.party.units ) {
+			if( unit == this )
+				continue;
+
+			let distance = Utils.distance(this, unit);
+			if( !closest || closest.distance > distance )
+				closest = {unit, distance};
+		}
+
+		return closest;
 	}
 
 }

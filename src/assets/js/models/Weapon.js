@@ -74,11 +74,11 @@ export default class Weapon extends PIXI.Container {
 		this.shape = new IntersectHelper.Rectangle(this);
 	}
 
-	getBlade () {
+	getModel () {
 		return this.getChildByName('Blade');
 	}
 	getLength () {
-		return this.getBlade().width;
+		return this.width;
 	}
 
 	pierce (target, speed = 300) {
