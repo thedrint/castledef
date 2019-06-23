@@ -8,6 +8,11 @@ import Utils from './Utils';
 
 import Container from './base/Container';
 
+import PathfindingStrategy from './base/PathfindingStrategy';
+
+import PolygonMap from './pathfind/PolygonMap';
+import Polygon from './pathfind/Polygon';
+
 import Scene from './Scene';
 import Body from './models/Body';
 import Helmet from './models/Helmet';
@@ -44,6 +49,8 @@ export default class Unit extends Container {
 	init () {
 		this._righthand = undefined;
 		this._lefthand  = undefined;
+
+		this.pf = new PathfindingStrategy(this);
 	}
 
 	initAttrs (attrs = Defaults.unit.attrs) {
@@ -81,7 +88,7 @@ export default class Unit extends Container {
 		let weapon = new Weapon({model:{color:params.colors.weapon, texture: params.textures.weapon}});
 		weapon.x = 0;
 		weapon.y = params.size/2;
-		weapon.angle = -10;
+		// weapon.angle = -10;
 		this.rightHand = weapon;
 		models.push(weapon);
 
@@ -193,6 +200,15 @@ export default class Unit extends Container {
 		return baseSpeed;
 	}
 
+	getWeaponTargetAngle (target) {
+		let tc = Utils.getLocal(target);
+		let weapon = this.Weapon;
+		let lc = Utils.getLocal(weapon);
+		let wc = weapon.toGlobal(lc);
+		let targetAngle = Utils.getPointAngle(wc, tc);
+		return targetAngle;
+	}
+
 	getClosest () {
 		let closest = {enemy:undefined, friend:undefined};
 
@@ -217,6 +233,17 @@ export default class Unit extends Container {
 		return closest;
 	}
 
+	backwardStep (from, speed = undefined) {
+		// If enemy too far but friend in close range - make step backward from friend to get more space for moves
+		if( !speed )
+			speed = this.getSpeed()/FPS.target;
+		let backwardPosition = new PIXI.Point(
+			this.x - Math.sign(from.x-this.x)*speed, 
+			this.y - Math.sign(from.y-this.y)*speed, 
+		);
+		return this.followTo(backwardPosition, speed);
+	}
+
 	getClosestFriend () {
 		let closest = undefined;
 		for( let unit of this.party.units ) {
@@ -229,6 +256,47 @@ export default class Unit extends Container {
 		}
 
 		return closest;
+	}
+
+	/**
+	 * Returns "world center" of unit (in fact center of his body for simplify)
+	 * @return PIXI.Point {x, y}
+	 */
+	getCenter () {
+		return IntersectHelper.getShapeCenter(this.Body);
+	}
+
+	getLOS (target, color = Colors.black, size = 1) {
+		let wc = this.getCenter();
+		let tc = target.getCenter();
+		let los = Scene.createLine(wc, tc, color, size);
+		los.target = target;
+		return los;
+	}
+
+	/**
+	 * Creates moving graph, calculate path from current position to target and returns array of path points
+	 * @param  {Container|PIXI.Container} target Any object has coordinates properties (x and y)
+	 * @return {Array}        [description]
+	 */
+	getPathTo (target) {
+		this.scene.initMap();
+		let map = this.scene.map;
+		this.scene.registry.forEach( p => {
+			if( p == this || p == target )
+				return;
+
+			let poly = new Polygon(...Utils.flatToCoords(p.shape.vertices));
+			map.polygons.push(poly);
+		});
+
+		map.createGraph();
+		let path = map.calculatePath(this.getCenter(), target);
+		let pathCoords = path.reduce( (a, n) => {
+			return [...a, map.walkgraph.nodes[n].pos];
+		}, []);
+
+		return pathCoords;
 	}
 
 }

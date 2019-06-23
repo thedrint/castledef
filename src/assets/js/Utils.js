@@ -1,5 +1,7 @@
 
 import * as PIXI from 'pixi.js';
+import * as FERMAT from '@mathigon/fermat'
+import {geom} from 'jsts'
 
 export default class Utils {
 
@@ -51,6 +53,10 @@ export default class Utils {
 		let vx = (s2.x + this._getCenter(s2, s2.width, "x")) - (s1.x + this._getCenter(s1, s1.width, "x")),
 				vy = (s2.y + this._getCenter(s2, s2.height, "y")) - (s1.y + this._getCenter(s1, s1.height, "y"));
 		return Math.sqrt(vx * vx + vy * vy);
+	}
+
+	static getLocal (o) {
+		return new PIXI.Point(o.x, o.y);
 	}
 
 	static getLocalCenter (o) {
@@ -233,13 +239,15 @@ export default class Utils {
 				//console.log(o.anchor[axis])
 				return dimension / 2;
 			}
-		} else if (o.pivot !== undefined) {
+		} 
+		else if (o.pivot !== undefined) {
 			if (o.pivot[axis] !== 0) {
 				return o.pivot[axis];
 			} else {
 				return dimension / 2;
 			}
-		} else {
+		} 
+		else {
 			return dimension / 2;
 		}
 	}
@@ -540,10 +548,10 @@ export default class Utils {
 	) {
 
 		//Calculate the center points of each sprite
-		spriteOneCenterX = s1.x + this._getCenter(s1, s1.width, "x");
-		spriteOneCenterY = s1.y + this._getCenter(s1, s1.height, "y");
-		spriteTwoCenterX = s2.x + this._getCenter(s2, s2.width, "x");
-		spriteTwoCenterY = s2.y + this._getCenter(s2, s2.height, "y");
+		let spriteOneCenterX = s1.x + this._getCenter(s1, s1.width, "x");
+		let spriteOneCenterY = s1.y + this._getCenter(s1, s1.height, "y");
+		let spriteTwoCenterX = s2.x + this._getCenter(s2, s2.width, "x");
+		let spriteTwoCenterY = s2.y + this._getCenter(s2, s2.height, "y");
 
 		//Plot a vector between spriteTwo and spriteOne
 		let vx = spriteTwoCenterX - spriteOneCenterX,
@@ -622,4 +630,49 @@ export default class Utils {
 		//Return the true/false value of the collision test
 		return noObstacles;
 	}
+
+	/**
+	 * Returns true iff the line from (a,b)->(c,d) intersects with (p,q)->(r,s)
+	 * jsts implementation - it works
+	 * @param ...points first 4 points for first line segment, next 4 for second line segment
+	 * @return bool 
+	 */
+	static linesIntersect (...points)
+	{
+		let [a, b, c, d, p, q, r, s] = points;
+		// console.log(`a, b, c, d, p, q, r, s`, a, b, c, d, p, q, r, s);
+		let s1 = new geom.LineSegment(new geom.Coordinate(a,b), new geom.Coordinate(c,d));
+		let s2 = new geom.LineSegment(new geom.Coordinate(p,q), new geom.Coordinate(r,s));
+		return s1.intersection(s2);
+	}
+
+	static unique () {
+		return `f${(~~(Math.random()*1e8)).toString(16)}`;
+	}
+
+	static range (size = 1, start = 0) {
+		return [...Array(size).keys()].map(i => i + start);
+	}
+
+	/**
+	 * Make from flat array new array of coordinate objects
+	 * Each letters in dimensions is a one dimension. 'xy' represents 2d, 'xyz' represents 3d coordinates
+	 * Possible to use to convert flat matrix arrays, use 'abcdefxyw' for 2d matrix for example
+	 * 
+	 * @use let coords = Utils.flatToCoords([0,0, 10,10, ...]);// [{x:0,y:0}, {x:10,y:10}, ...];
+	 * @use let coords = Utils.flatToCoords([0,0,0, 10,10,10, ...], 'xyz');// [{x:0,y:0,z:0}, {x:10,y:10,z:10}, ...];
+	 * 
+	 * @param  {Array}  flatCoords - coordinates in flat view. Vertices for example
+	 * @param  {String} dimensions - Describes used axis of element of new array. 'xy' by default
+	 * @return {Array}            [description]
+	 */
+	static flatToCoords (flatCoords = [], dims = 'xy') {
+		return flatCoords.reduce( (ac, v, i, ar) => {
+			if( i%dims.length == 0 ) {
+				ac.push(Array.from(dims).reduce((c,d,j) => {return Object.assign(c,{[d]:ar[i+j]})},{}));
+			}
+			return ac
+		}, []);
+	}
+
 }

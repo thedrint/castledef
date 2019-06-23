@@ -5,11 +5,16 @@ import IntersectHelper from './../IntersectHelper';
 import Colors from './../Colors';
 import {Game as GameSettings, FPS} from './../Settings';
 
+import PolygonMap from './../pathfind/PolygonMap';
+import Polygon from './../pathfind/Polygon';
+
 import Scene from './../Scene';
 import Unit from './../Unit';
 import Hero from './../Hero';
 import Party from './../Party';
 import PartyManager from './../PartyManager';
+import UnitManager from './../UnitManager';
+import RegistryManager from './../RegistryManager';
 import Crate from './../models/Crate';
 
 import Utils from './../Utils';
@@ -45,7 +50,7 @@ export default class MainScene extends Scene {
 		let grass = new PIXI.TilingSprite(this.app.textures.Grass, this.app.screen.width, this.app.screen.height);
 		this.addChild(grass);
 
-		this.drawCoords(16);
+		this.drawCoords(32);
 
 		let heroSettings = {
 			name  :`John Wick`, 
@@ -80,7 +85,7 @@ export default class MainScene extends Scene {
 			}
 		};
 		let BabaYaga = new Hero(heroSettings);
-		BabaYaga.spawnPoint = new PIXI.Point(JohnWick.spawnPoint.x, JohnWick.spawnPoint.y+128);
+		BabaYaga.spawnPoint = new PIXI.Point(JohnWick.spawnPoint.x, JohnWick.spawnPoint.y+256);
 		this.drawChild(BabaYaga, BabaYaga.spawnPoint.x, BabaYaga.spawnPoint.y);
 		// JohnWick.angle = 45;
 		this.drawBounds(BabaYaga);
@@ -96,10 +101,11 @@ export default class MainScene extends Scene {
 			},
 		};
 		let BadGuy = new Unit(enemySettings);
-		this.drawChild(BadGuy, JohnWick.spawnPoint.x+128, JohnWick.spawnPoint.y+0);
+		this.drawChild(BadGuy, JohnWick.spawnPoint.x+256, JohnWick.spawnPoint.y+0);
 		BadGuy.angle = -135;
 		this.drawBounds(BadGuy);
 
+		// console.log(JohnWick.position);
 		// console.log(Utils.getWorldCenter(JohnWick));
 		// console.log(Utils.getWorldCenter(BadGuy));
 		// console.log(Utils.distance(JohnWick, BadGuy));
@@ -116,11 +122,12 @@ export default class MainScene extends Scene {
 			.add(BadGuy)
 		;
 
+		// Add some obstacles to scene
 		let cratesOnScene = [
 			[128+64, 128],
-			[128, 128+192],
-			[256+192, 256],
-			[256+64, 256+128],
+			[128+128+64, 128+32],
+			// [256+192, 256],
+			// [256+64, 256+128],
 		];
 		cratesOnScene.forEach( (coords, i) => {
 			let [x,y] = coords;
@@ -131,18 +138,32 @@ export default class MainScene extends Scene {
 				},
 			});
 			this.drawChild(crate, x, y);
-			crate.angle = Utils.randomInt(0, 90);
+			// crate.angle = Utils.randomInt(0, 90);
+			this.registry.add(crate);
 		});
 
 
 		// Create parties for our enemies
-		// let heroPartyUnits = new Set([BabaYaga]);
+		let heroPartyUnits = new Set([BabaYaga]);
 		let HeroParty = new Party({name:'Heroes', faction: 'Good'}, JohnWick, new Set([BabaYaga]));
 		let EnemyParty = new Party({name:'Enemies', faction: 'Evil'}, BadGuy);
 		this.party
 			.add(HeroParty)
 			.add(EnemyParty)
 		;
+
+		IntersectHelper.updateShape(...this.registry.values());
+		// this.registry.forEach(v => console.log(v.name, v.shape.vertices));
+
+		this.drawLOS(JohnWick, BadGuy, Colors.green, 1)
+			.drawLOS(JohnWick, BabaYaga, Colors.green, 1)
+			.drawLOS(BabaYaga, BadGuy, Colors.green, 1)
+		;
+
+		let pathCoords = JohnWick.getPathTo(BadGuy);
+		this.drawPath(JohnWick, Colors.pink, 16, ...pathCoords);
+		pathCoords = BabaYaga.getPathTo(BadGuy);
+		this.drawPath(BabaYaga, Colors.pink, 8, ...pathCoords);
 	}
 
 
@@ -151,11 +172,15 @@ export default class MainScene extends Scene {
 			if( fighter.isDied() )
 				return;
 
-			this.seekAndDestroy(fighter);
-			this.drawBounds(fighter)
+			// this.seekAndDestroy(fighter);
+			this
 				.drawBounds(fighter.Shield, Colors.metal)
 				.drawBounds(fighter.Weapon, Colors.pink)
 			;
+			let closest = fighter.getClosest();
+			// console.log(closest);
+			this.drawLOS(fighter, closest.enemy.unit, Colors.green, 1);
+			this.registry.forEach(v => this.drawBounds(v));
 
 			// Example of dynamic switching scene
 			// if( fighter.isDied() ) {
@@ -170,12 +195,13 @@ export default class MainScene extends Scene {
 			fighter.Body.alpha = 1;
 			fighter.Shield.alpha = 1;
 
-			fighter.followTo(fighter.spawnPoint, fighter.getSpeed()/FPS.target);
+			fighter.followTo(fighter.spawnPoint);
 
 			return;
 		}
 
 		if( fighter instanceof Hero && closest.enemy.distance <= fighter.Weapon.getLength()*2.5 ) {
+			fighter.easeRotateTo(fighter.getWeaponTargetAngle(closest.enemy.unit));
 			fighter.Weapon.pierce(closest.enemy.unit);
 		}
 
@@ -252,60 +278,61 @@ export default class MainScene extends Scene {
 			fighter.hitHp(enemy);
 
 			if( enemy.isDied() ) {
-				
-				this.removeBounds(enemy)
-					.removeBounds(enemy.Weapon)
-					.removeBounds(enemy.Shield)
-				;
-				enemy.party.disbandUnit(enemy);
-				this.fighters.delete(enemy);
-				enemy.destroy();
 
-				let enemySettings = {name:`Bad Guy`, 
-					attrs: {lvl:10, attack:5},
-					model: {
-						textures: {
-							weapon: this.app.textures.Sword, 
-							shield: this.app.textures.RoundShield, 
+				setTimeout(() => {
+					this.removeBounds(enemy)
+						.removeBounds(enemy.Weapon)
+						.removeBounds(enemy.Shield)
+					;
+					enemy.party.disbandUnit(enemy);
+					this.fighters.delete(enemy);
+					enemy.destroy();
+				}, 1000);
+
+
+				setTimeout(() => {
+					let enemySettings = {name:`Bad Guy`, 
+						attrs: {lvl:10, attack:5},
+						model: {
+							textures: {
+								weapon: this.app.textures.Sword, 
+								shield: this.app.textures.RoundShield, 
+							},
 						},
-					},
-				};
+					};
 
-				let newBadGuy = new Unit(enemySettings);
-				
-				let appW = this.app.screen.width;
-				let appH = this.app.screen.height;
-				let x = Utils.randomInt(256, appW - 64);
-				let y = Utils.randomInt(64, appH - 64);
-				this.drawChild(newBadGuy, x, y);
-				
-				this.fighters.add(newBadGuy);
+					let newBadGuy = new Unit(enemySettings);
+					
+					let appW = this.app.screen.width;
+					let appH = this.app.screen.height;
+					let x = Utils.randomInt(256, appW - 64);
+					let y = Utils.randomInt(64, appH - 64);
+					this.drawChild(newBadGuy, x, y);
+					
+					this.fighters.add(newBadGuy);
 
-				this.party.get('Enemies').hireUnit(newBadGuy);
+					this.party.get('Enemies').hireUnit(newBadGuy);
+				}, 5000);
 
 				return;
 				
 			}
-			// Start a fight
 		}
 
-		let enemyFar = closest.enemy.distance >= GameSettings.unit.size;
-		let friend = closest.friend;
-		let friendFar = friend && (friend.distance >= GameSettings.unit.size);
-		// If both nearest enemy and friend too far - move to enemy
-		if( enemyFar && friendFar ){
-			fighter.followTo(enemy, fighter.getSpeed()/FPS.target);
+		let strategy = fighter.pf.chooseAction();
+		// console.log(fighter.name, strategy);
+		if( !strategy )
+			return;
+		// If both, nearest enemy and friend, too far - move to enemy
+		if( strategy.action == 'followTo' ){
+			fighter.followTo(...strategy.params);
 			return;
 		}
 		// If enemy too far but friend in close range - make step backward from friend to get more space for moves
-		else if( friend && !friendFar && enemyFar ) {
-			let speed = fighter.getSpeed()/FPS.target;
-			let backwardPosition = new PIXI.Point(
-				fighter.x - Math.sign(friend.x-fighter.x)*speed, 
-				fighter.y - Math.sign(friend.y-fighter.y)*speed, 
-			);
-			fighter.followTo(backwardPosition, speed);
-		}
+		// else if( strategy.action == 'backwardStep' ) {
+		// 	fighter.backwardStep(...strategy.params);
+		// 	return;
+		// }
 	}
 	/**
 	 * Init internal scene objects
@@ -313,65 +340,25 @@ export default class MainScene extends Scene {
 	 */
 	initGameObjects () {
 		this.party = new PartyManager(this);
-		this.fighters = new Set();
+		this.fighters = new UnitManager(this);
+		this.registry = new RegistryManager(this);
+
+		this.initMap();
+
 	}
 
-	drawBounds (o, color = Colors.red) {
-		if( !o.boundsHelper ) {
-			o.boundsHelper = new PIXI.Graphics();
-			o.boundsHelper.name = 'BoundsHelper';
-			this.addChild(o.boundsHelper);		
-		}
+	initMap () {
+		this.map = new PolygonMap();
+		let mapCoords = Utils.flatToCoords([
+				0,0,
+				this.app.screen.width, 0,
+				this.app.screen.width, this.app.screen.height,
+				0, this.app.screen.height
+		]);
+		let mapPolygon = new Polygon(...mapCoords);
+		this.map.polygons.push(mapPolygon);
 
-		o.boundsHelper.clear();
-		o.boundsHelper.lineStyle(1, color);
-		o.toGlobal(new PIXI.Point(o.x, o.y));
-		let b = o.getLocalBounds();
-		let d = o.worldTransform.decompose(new PIXI.Transform());
-		o.boundsHelper.drawShape(b);
-		o.boundsHelper.setTransform(d.position.x, d.position.y, d.scale.x, d.scale.y, d.rotation, d.skew.x, d.skew.y, d.pivot.x, d.pivot.y);
-
-		return this;
-	}
-
-	removeBounds (o) {
-		if( o.boundsHelper ) {
-			o.boundsHelper.destroy();
-		}
-
-		return this;
-	}
-
-	drawCoords (step = 64) {
-		this.coordHelper = new PIXI.Graphics();
-		this.coordHelper.name = 'CoordHelper';
-		this.addChild(this.coordHelper);		
-		this.coordHelper.clear();
-		this.coordHelper.lineStyle(1, Colors.red);
-		// Draw x
-		let x = 0;
-		while( x <= this.app.screen.width ) {
-			this.coordHelper.moveTo(x, 0);
-			this.coordHelper.lineTo(x, this.app.screen.height);
-			x += step;
-		}
-		// Draw y
-		let y = 0;
-		while( y <= this.app.screen.height ) {
-			this.coordHelper.moveTo(0, y);
-			this.coordHelper.lineTo(this.app.screen.width, y);
-			y += step;
-		}
-
-		return this;
-	}
-
-	removeCoords () {
-		if( this.coordHelper ) {
-			this.coordHelper.destroy();
-		}
-
-		return this;
+		return this.map;
 	}
 
 	testObjects () {

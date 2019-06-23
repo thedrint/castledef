@@ -3,7 +3,7 @@ import * as PIXI from 'pixi.js';
 import * as TWEEN from 'es6-tween';
 import * as Angle from 'yy-angle';
 
-import { FPS } from './../Settings';
+import { Game as GameSettings, Application as ApplicationSettings, FPS } from './../Settings';
 import Utils from './../Utils';
 
 import * as Constants from './../Constants';
@@ -15,7 +15,12 @@ export default class Container extends PIXI.Container {
 	}
 
 	moveTo (target, speedInPixels = 1) {
+		let lastCoords = {x:this.x, y:this.y};
 		Utils.follow(this, target, speedInPixels);
+		// if( this.x >= ApplicationSettings.width-GameSettings.unit.size || this.x < GameSettings.unit.size )
+		// 	this.x = lastCoords.x;
+		// if( this.y >= ApplicationSettings.height-GameSettings.unit.size || this.y < GameSettings.unit.size )
+		// 	this.y = lastCoords.y;
 	}
 
 	rotateTo (rad) {
@@ -30,7 +35,10 @@ export default class Container extends PIXI.Container {
 		}
 	}
 
-	followTo (target, speedInPixels = 1) {
+	followTo (target, speedInPixels = undefined) {
+		if( !speedInPixels )
+			speedInPixels = this.getSpeed()/FPS.target;
+		
 		let angularVelocity = Angle.PI_2/FPS.target;
 		let targetAngle = Utils.getPointAngle(this, target);
 		let diff = Angle.differenceAngles(targetAngle, this.rotation);
@@ -48,6 +56,26 @@ export default class Container extends PIXI.Container {
 		}
 
 		return this;
+	}
+
+	easeRotateTo(targetAngle) {
+		let angularVelocity = Angle.PI_2/FPS.target;
+		let diff = Angle.differenceAngles(targetAngle, this.rotation);
+		let sign = Angle.differenceAnglesSign(targetAngle, this.rotation);
+		if( diff > Constants.ONE_DEGREE * 5 ) {
+			if( diff >= angularVelocity ) {
+				this.rotateBy(sign*angularVelocity);
+			}
+			else {
+				this.rotateTo(targetAngle);
+			}			
+		}
+
+		return this;
+	}
+
+	getAngleTo(target) {
+
 	}
 
 }

@@ -5,10 +5,12 @@
   "description": "Simple 2d javascript game about defend and grow your castle",
   "main": "./src/index.js",
   "dependencies": {
+    "@mathigon/fermat": "^0.2.7",
     "es6-tween": "^5.5.10",
     "i18next": "^16.0.0",
     "i18next-browser-languagedetector": "^3.0.1",
     "i18next-xhr-backend": "^3.0.0",
+    "jsts": "^2.0.4",
     "pixi.js": "^5.0.4",
     "reset-css": "^4.0.1",
     "webfontloader": "^1.6.28",

@@ -1,15 +1,15 @@
- import * as PIXI from 'pixi.js';
- import YyIntersects from 'yy-intersects';
- import Utils from './Utils';
+import * as PIXI from 'pixi.js';
+import YyIntersects from 'yy-intersects';
+import Utils from './Utils';
 
- export default class IntersectHelper {
+export default class IntersectHelper {
  
- 	static get Circle () {
- 		return YyIntersects.Circle;
- 	}
- 	static get Rectangle () {
- 		return YyIntersects.Rectangle;
- 	}
+	static get Circle () {
+		return YyIntersects.Circle;
+	}
+	static get Rectangle () {
+		return YyIntersects.Rectangle;
+	}
 
 	static getShapeCenter (displayObject) {
 		return Utils.getWorldCenter(displayObject);
@@ -51,10 +51,23 @@
 		let worldCenter = this.getShapeCenter(displayObject);
 		let shapeUpdates = {};
 		if( displayObject.shape instanceof this.Rectangle ) {
-			shapeUpdates = {
-				center         : worldCenter, 
-				rotation       : this.getShapeTransform(displayObject)
-			};
+			// Hack for units
+			if( displayObject.Body ) {
+				// console.log(displayObject.Body);
+				worldCenter = this.getShapeCenter(displayObject.Body);
+				// console.log(`${displayObject.name} Body wc`, worldCenter);
+				shapeUpdates = {
+					square         : displayObject.Body.width,
+					center         : worldCenter, 
+					noRotate       : true,
+				};
+			}
+			else {
+				shapeUpdates = {
+					center         : worldCenter, 
+					rotation       : this.getShapeTransform(displayObject)
+				};
+			}
 		}
 		else if( displayObject.shape instanceof this.Circle ) {
 			shapeUpdates = {
