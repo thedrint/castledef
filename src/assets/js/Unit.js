@@ -274,24 +274,19 @@ export default class Unit extends Container {
 		return los;
 	}
 
+	inLOS (target) {
+		return this.scene.map.InLineOfSight({x:this.x, y:this.y}, {x:target.x, y:target.y});
+	}
+
 	/**
 	 * Creates moving graph, calculate path from current position to target and returns array of path points
 	 * @param  {Container|PIXI.Container} target Any object has coordinates properties (x and y)
 	 * @return {Array}        [description]
 	 */
 	getPathTo (target) {
-		this.scene.initMap();
-		let map = this.scene.map;
-		this.scene.registry.forEach( p => {
-			if( p == this || p == target )
-				return;
+		let map = this.scene.getMap();
 
-			let poly = new Polygon(...Utils.flatToCoords(p.shape.vertices));
-			map.polygons.push(poly);
-		});
-
-		map.createGraph();
-		let path = map.calculatePath(this.getCenter(), target);
+		let path = map.calculatePath(this.getCenter(), target.getCenter());
 		let pathCoords = path.reduce( (a, n) => {
 			return [...a, map.walkgraph.nodes[n].pos];
 		}, []);

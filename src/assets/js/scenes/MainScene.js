@@ -1,4 +1,5 @@
 
+import * as FERMAT from '@mathigon/fermat';
 import * as PIXI from 'pixi.js';
 import IntersectHelper from './../IntersectHelper';
 
@@ -85,7 +86,7 @@ export default class MainScene extends Scene {
 			}
 		};
 		let BabaYaga = new Hero(heroSettings);
-		BabaYaga.spawnPoint = new PIXI.Point(JohnWick.spawnPoint.x, JohnWick.spawnPoint.y+256);
+		BabaYaga.spawnPoint = new PIXI.Point(JohnWick.spawnPoint.x+160, JohnWick.spawnPoint.y+256);
 		this.drawChild(BabaYaga, BabaYaga.spawnPoint.x, BabaYaga.spawnPoint.y);
 		// JohnWick.angle = 45;
 		this.drawBounds(BabaYaga);
@@ -101,7 +102,7 @@ export default class MainScene extends Scene {
 			},
 		};
 		let BadGuy = new Unit(enemySettings);
-		this.drawChild(BadGuy, JohnWick.spawnPoint.x+256, JohnWick.spawnPoint.y+0);
+		this.drawChild(BadGuy, JohnWick.spawnPoint.x+256, JohnWick.spawnPoint.y+32);
 		BadGuy.angle = -135;
 		this.drawBounds(BadGuy);
 
@@ -160,10 +161,61 @@ export default class MainScene extends Scene {
 			.drawLOS(BabaYaga, BadGuy, Colors.green, 1)
 		;
 
-		let pathCoords = JohnWick.getPathTo(BadGuy);
+		// let pathCoords = JohnWick.getPathTo(BadGuy);
+		// this.drawPath(JohnWick, Colors.pink, 16, ...pathCoords);
+		// pathCoords = BabaYaga.getPathTo(BadGuy);
+		// this.drawPath(BabaYaga, Colors.pink, 8, ...pathCoords);
+
+		let pathCoords = [];
+		let testCode = () => {
+			this.getMap(true);
+			pathCoords = JohnWick.getPathTo(BadGuy);
+		}
+
+		let res = Utils.perfTest('create map and calculate path', 1, testCode);
+		console.log(`${res.name} in ${res.result.duration/res.n}ms`);
+
 		this.drawPath(JohnWick, Colors.pink, 16, ...pathCoords);
-		pathCoords = BabaYaga.getPathTo(BadGuy);
-		this.drawPath(BabaYaga, Colors.pink, 8, ...pathCoords);
+
+		console.table([
+			['checkInMainPoly', Utils.sumPerf('checkInMainPoly')],
+			['checkInTooClose', Utils.sumPerf('checkInTooClose')],
+			['checkMiddlePointInside', Utils.sumPerf('checkMiddlePointInside')],
+			['checkEdgesForCross', Utils.sumPerf('checkEdgesForCross')],
+			['InLineOfSight', Utils.sumPerf('InLineOfSight')],
+			['selfCrossing', Utils.sumPerf('selfCrossing')],
+			['vertexCollect', Utils.sumPerf('vertexCollect')],
+			['createGraph', Utils.sumPerf('createGraph')],
+			['calculatePath', Utils.sumPerf('calculatePath')],
+			['AstarAlgorithm', Utils.sumPerf('AstarAlgorithm')],
+			['pointInside', Utils.sumPerf('pointInside')],
+			['LineSegmentsCross', Utils.sumPerf('LineSegmentsCross')],
+		]);
+
+		// console.log(this.map);
+
+		// console.log(this.map.InLineOfSight(JohnWick, BadGuy));
+		// console.log(this.map.InLineOfSight(BadGuy, BabaYaga));
+
+		// let testForeach = () => {
+		// 	Utils.range(10000).forEach((i) => {i++});
+		// }
+		// res = Utils.perfTest('testForeach', 1, testForeach);
+		// console.log(`${res.name} in ${res.result.duration/res.n}ms`);
+
+		// let testFor = () => {
+		// 	for( let i of Utils.range(10000) )
+		// 		i++;
+		// }
+		// res = Utils.perfTest('testFor', 1, testFor);
+		// console.log(`${res.name} in ${res.result.duration/res.n}ms`);
+
+		// performance.mark('testCreateGraph0');
+		// Utils.range(1).forEach(testCode);
+		// performance.measure('testCreateGraph0 measure', 'testCreateGraph0');
+		// console.log(performance.getEntriesByName(`testCreateGraph0 measure`)[0])
+
+
 	}
 
 
@@ -173,19 +225,10 @@ export default class MainScene extends Scene {
 				return;
 
 			// this.seekAndDestroy(fighter);
-			this
-				.drawBounds(fighter.Shield, Colors.metal)
-				.drawBounds(fighter.Weapon, Colors.pink)
-			;
+			this.drawBounds(fighter.Shield, Colors.metal).drawBounds(fighter.Weapon, Colors.pink);
 			let closest = fighter.getClosest();
-			// console.log(closest);
 			this.drawLOS(fighter, closest.enemy.unit, Colors.green, 1);
 			this.registry.forEach(v => this.drawBounds(v));
-
-			// Example of dynamic switching scene
-			// if( fighter.isDied() ) {
-			// 	this.app.stage.switchTo("GameOver");
-			// }
 		});
 	}
 
@@ -343,20 +386,33 @@ export default class MainScene extends Scene {
 		this.fighters = new UnitManager(this);
 		this.registry = new RegistryManager(this);
 
-		this.initMap();
-
+		// this.map = this.getMap();
 	}
 
 	initMap () {
-		this.map = new PolygonMap();
-		let mapCoords = Utils.flatToCoords([
-				0,0,
-				this.app.screen.width, 0,
-				this.app.screen.width, this.app.screen.height,
-				0, this.app.screen.height
-		]);
-		let mapPolygon = new Polygon(...mapCoords);
-		this.map.polygons.push(mapPolygon);
+			this.map = new PolygonMap();
+			let mapCoords = Utils.flatToCoords([
+					0,0,
+					this.app.screen.width, 0,
+					this.app.screen.width, this.app.screen.height,
+					0, this.app.screen.height
+			]);
+			let mapPolygon = new Polygon(...mapCoords);
+			this.map.polygons.push(mapPolygon);
+			this.registry.forEach( p => {
+				if( p instanceof Unit )
+					return;
+
+				let poly = new Polygon(...Utils.flatToCoords(p.shape.vertices));
+				this.map.polygons.push(poly);
+			});
+
+			this.map.createGraph();		
+	}
+
+	getMap (recreate = false) {
+		if( !this.map || recreate ) 
+			this.initMap();
 
 		return this.map;
 	}
