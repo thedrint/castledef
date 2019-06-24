@@ -674,6 +674,15 @@ export default class Utils {
 			return ac
 		}, []);
 	}
+	//TODO: Make this alias as main function in code
+	static atoc (flatCoords = [], dims = 'xy') {
+		return flatCoords.reduce( (ac, v, i, ar) => {
+			if( i%dims.length == 0 ) {
+				ac.push(Array.from(dims).reduce((c,d,j) => {return Object.assign(c,{[d]:ar[i+j]})},{}));
+			}
+			return ac
+		}, []);
+	}
 
 	static perfTest (name, times = 1, code = undefined) {
 		if( typeof code != 'function' )

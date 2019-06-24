@@ -9,7 +9,7 @@ import Hero from './Hero';
 
 export default class Party {
 	
-	constructor (settings = Defaults.party, leader, units = new Set() ) {
+	constructor (settings = Defaults.party, leader = undefined, units = new Set() ) {
 		let partySettings = Utils.cleanOptionsObject(settings, Defaults.party);
 		Object.assign(this, partySettings);
 
@@ -22,18 +22,27 @@ export default class Party {
 
 		this.units = new Set();
 
-		this.leader = leader;
-		this.hireUnit(leader, UNIT.SPECIALIZATION.HQ);
+		if( leader )
+			this.setLeader(leader);
 
+		this.addUnits(units);
+	}
+
+	setLeader (leader) {
+		this.leader = leader;
+		if( this.hireUnit(leader, UNIT.SPECIALIZATION.HQ) )
+		 return this;
+		else
+			return false;
+	}
+
+	addUnits (units = new Set()) {
 		if( units.size ) {
 			for( let unit of units ) {
 				this.hireUnit(unit);
-			}			
+			}
 		}
-	}
-
-	isPlayerParty () {
-		return ( this.leader instanceof Hero );
+		return this;
 	}
 
 	getPartySize () {
@@ -50,13 +59,14 @@ export default class Party {
 
 		//After pass all checks, we can hire unit to party
 		if( canHired ) {
-			this.units.add(unit);
-			// Add link to this party to unit's property
-			unit.party = this;
-			// by default move unit to its native division
-			this.setUnitDivision(unit)
-			//TODO: callbacks
-			return true;
+			if( this.units.add(unit) ) {
+				// Add link to this party to unit's property
+				unit.party = this;
+				// by default move unit to its native division
+				this.setUnitDivision(unit)
+				//TODO: callbacks
+			}
+			return this;
 		}
 		else {
 			//TODO: callbacks

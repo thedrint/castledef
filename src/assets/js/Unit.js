@@ -284,14 +284,9 @@ export default class Unit extends Container {
 	 * @return {Array}        [description]
 	 */
 	getPathTo (target) {
-		let map = this.scene.getMap();
-
-		let path = map.calculatePath(this.getCenter(), target.getCenter());
-		let pathCoords = path.reduce( (a, n) => {
-			return [...a, map.walkgraph.nodes[n].pos];
-		}, []);
-
-		return pathCoords;
+		this.scene.getMap();// init scene.map object if not inited before
+		this.scene.map.calculatePath(this.getCenter(), target.getCenter());
+		return this.scene.map.getPathNodes();
 	}
 
 }

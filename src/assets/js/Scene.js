@@ -24,10 +24,10 @@ export default class Scene extends Container {
 		console.log('Updating...');
 	}
 
-	drawChild (child, x = 0, y = 0) {
+	drawChild (child, position = new PIXI.Point(0,0)) {
 		this.addChild(child);
 		child.scene = this;
-		child.setTransform(x, y);
+		child.setTransform(position.x, position.y);
 	}
 
 	static createEllipse (x, y, width, height, color) {

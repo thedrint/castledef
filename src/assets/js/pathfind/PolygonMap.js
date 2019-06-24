@@ -1,5 +1,6 @@
 // import luxe.Vector;
 import Utils from './../Utils';
+import Polygon from './Polygon';
 import Graph from './Graph';
 import GraphNode from './GraphNode';
 import GraphEdge from './GraphEdge';
@@ -8,7 +9,7 @@ import DijkstraAlgorithm from './DijkstraAlgorithm';
 
 export default class PolygonMap {
 
-  constructor (w, h) {
+  constructor (w = 0, h = 0) {
 		this.mainwalkgraph = new Graph();
 		this.calculatedpath = []//new Array<Int>();
 
@@ -19,6 +20,15 @@ export default class PolygonMap {
 		this.targety = undefined;
 		this.startNodeIndex = 0;
 		this.endNodeIndex = 0;
+
+		if( w && h ) {
+			this.setMainPolygon(w,h);
+		}
+  }
+
+  setMainPolygon (w,h) {
+  	this.polygons[0] = new Polygon( ...Utils.atoc([0,0, w,0, w,h, 0,h]) );
+  	return this;
   }
 
 	Distance(v1, v2) {
@@ -33,12 +43,13 @@ export default class PolygonMap {
 		// let epsilon = Number.Epsilon;
 
 		// Not in LOS if any of the ends is outside the polygon
+		//NOTE: I dont think it needed
 		performance.mark('checkInMainPoly()');
-		if( !this.polygons[0].pointInside(start) || !this.polygons[0].pointInside(end) ) {
-			performance.measure('checkInMainPoly', 'checkInMainPoly()');
-			performance.measure('InLineOfSight', 'InLineOfSight()');
-			return false;
-		}
+		// if( !this.polygons[0].pointInside(start) || !this.polygons[0].pointInside(end) ) {
+		// 	performance.measure('checkInMainPoly', 'checkInMainPoly()');
+		// 	performance.measure('InLineOfSight', 'InLineOfSight()');
+		// 	return false;
+		// }
 		performance.measure('checkInMainPoly', 'checkInMainPoly()');
 
 		// In LOS if it's the same start and end location
@@ -95,7 +106,7 @@ export default class PolygonMap {
 
 		this.mainwalkgraph = new Graph();
 		let first = true;
-		this.vertices_concave = []//new Array<Vector>();
+		this.vertices_concave = [];
 		performance.mark('vertexCollect()');
 		for( let polygon of this.polygons ) {
 			if (polygon != null && polygon.vertices != null && polygon.vertices.length > 2) {
@@ -251,6 +262,16 @@ export default class PolygonMap {
 		
 		performance.measure('calculatePath', 'calculatePath()');
 		return this.calculatedpath;
+	}
+
+	getPathNodes (calculatedPath = undefined) {
+		if( !calculatedPath ) {
+			calculatedPath = this.calculatedpath;
+		}
+		// Change nodes index to nodes coordinates
+		return calculatedPath.reduce( (a, n) => {
+			return [...a, this.walkgraph.nodes[n].pos];
+		}, []);
 	}
 
 }

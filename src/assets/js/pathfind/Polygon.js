@@ -1,6 +1,5 @@
 
 import Utils from './../Utils';
-import * as FERMAT from '@mathigon/fermat';
 export default class Polygon {
 	
 	constructor (...coords) {
@@ -8,70 +7,21 @@ export default class Polygon {
 		this.fermatVertices = [];//new Array<Vector>();
 		if( coords.length ) {
 			this.vertices = coords;
-			this.fermatVertices = coords.map(v => new FERMAT.Point(v.x, v.y));
 		}
-
-		this.polyFermat = new FERMAT.Polygon(this.fermatVertices);
 	}
 	
 	addPoint (x, y) {
 		let v = {x:x, y:y};
 		this.vertices.push(v);
-		this.fermatVertices.push(new FERMAT.Point(x, y));
-		// this.fermatVertices.push(new FERMAT.Point(x, y));
 		return v;
-	}
-
-	pointInsideJsts (point) {
-		//NOTE: This method slower more than 2 times
-		// let poly = new Polygon(Utils.flatToCoords([0,0,100,0,100,100,0,100]));
-		// let p = {x:50,y:50};
-		// let fp = new FERMAT.Point(p.x, p.y)
-
-		// let perf = {simple: 0, fermat: 0};
-		// let tests = 10000;
-
-		// perf.simple = performance.now();
-		// Utils.range(tests).forEach(() => poly.pointInside(p));
-		// perf.simple = performance.now() - perf.simple;
-
-		// perf.fermat = performance.now();
-		// Utils.range(tests).forEach(() => poly.pointInsideFermat(fp));
-		// perf.fermat = performance.now() - perf.fermat;
-
-		// console.log(perf);
-		
-		return this.polyFermat.contains(point);		
-	}
-	
-	pointInsideFermat (point) {
-		//NOTE: This method slower more than 2 times
-		// let poly = new Polygon(Utils.flatToCoords([0,0,100,0,100,100,0,100]));
-		// let p = {x:50,y:50};
-		// let fp = new FERMAT.Point(p.x, p.y)
-
-		// let perf = {simple: 0, fermat: 0};
-		// let tests = 10000;
-
-		// perf.simple = performance.now();
-		// Utils.range(tests).forEach(() => poly.pointInside(p));
-		// perf.simple = performance.now() - perf.simple;
-
-		// perf.fermat = performance.now();
-		// Utils.range(tests).forEach(() => poly.pointInsideFermat(fp));
-		// perf.fermat = performance.now() - perf.fermat;
-
-		// console.log(perf);
-		
-		return this.polyFermat.contains(point);		
 	}
 	
 	//ported from http://www.david-gouveia.com/portfolio/pathfinding-on-a-2d-polygonal-map/
 	pointInside(point, toleranceOnOutside = true) {
 		performance.mark('pointInside()');
 
-		// let epsilon = 0.5;
-		let epsilon = Number.EPSILON;
+		let epsilon = 0.5;
+		// let epsilon = Number.EPSILON;
 
 		let inside = false;
 		// Must have 3 or more edges
@@ -83,33 +33,41 @@ export default class Polygon {
 		let oldPoint = this.vertices[this.vertices.length - 1];
 		let oldSqDist = this.DistanceSquared(oldPoint.x, oldPoint.y, point.x, point.y);
 
-		for( let i of Utils.range(this.vertices.length) ) {
-			let newPoint = this.vertices[i];
+		this.vertices.forEach( v => {
+			let newPoint = v;
 			let newSqDist = this.DistanceSquared(newPoint.x, newPoint.y, point.x, point.y);
 
-			if( oldSqDist + newSqDist + 2.0 * Math.sqrt(oldSqDist * newSqDist) - this.DistanceSquared(newPoint.x, newPoint.y, oldPoint.x, oldPoint.y) < epsilon) {
+			if( 
+				oldSqDist + newSqDist 
+				+ 2.0 * Math.sqrt(oldSqDist * newSqDist) 
+				- this.DistanceSquared(newPoint.x, newPoint.y, oldPoint.x, oldPoint.y) 
+					< epsilon 
+			) {
 				performance.measure('pointInside', 'pointInside()');
 				return toleranceOnOutside;
 			}
 
 			let left, right;
-			if (newPoint.x > oldPoint.x)
-			{
+			if( newPoint.x > oldPoint.x ) {
 				left = oldPoint;
 				right = newPoint;
 			}
-			else
-			{
+			else {
 				left = newPoint;
 				right = oldPoint;
 			}
 			//WTF?
-			if (left.x < point.x && point.x <= right.x && (point.y - left.y) * (right.x - left.x) < (right.y - left.y) * (point.x - left.x))
+			if( 
+				left.x < point.x && 
+				point.x <= right.x && 
+				(point.y-left.y)*(right.x-left.x) < (right.y-left.y)*(point.x-left.x)
+			) {
 				inside = !inside;
+			}
 
 			oldPoint = newPoint;
 			oldSqDist = newSqDist;
-		}
+		});
 
 		performance.measure('pointInside', 'pointInside()');
 		return inside;

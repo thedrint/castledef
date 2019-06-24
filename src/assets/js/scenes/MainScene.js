@@ -3,7 +3,10 @@ import * as FERMAT from '@mathigon/fermat';
 import * as PIXI from 'pixi.js';
 import IntersectHelper from './../IntersectHelper';
 
+import Utils from './../Utils';
+
 import Colors from './../Colors';
+import * as Constants from './../Constants';
 import {Game as GameSettings, FPS} from './../Settings';
 
 import PolygonMap from './../pathfind/PolygonMap';
@@ -18,7 +21,6 @@ import UnitManager from './../UnitManager';
 import RegistryManager from './../RegistryManager';
 import Crate from './../models/Crate';
 
-import Utils from './../Utils';
 
 export default class MainScene extends Scene {
 
@@ -53,105 +55,64 @@ export default class MainScene extends Scene {
 
 		this.drawCoords(32);
 
-		let heroSettings = {
-			name  :`John Wick`, 
-			attrs : {lvl:10, attack:10, immortal:true},
-			model: {
-				colors: {armor: Colors.purple},
-				textures: {
-					weapon: this.app.textures.Sword, 
-					shield: this.app.textures.Shield, 
-				},
-			}
-		};
-		let JohnWick = new Hero(heroSettings);
-		JohnWick.spawnPoint = new PIXI.Point(128, 128);
-		this.drawChild(JohnWick, JohnWick.spawnPoint.x, JohnWick.spawnPoint.y);
+
+		// Create parties for our enemies
+		let HeroParty = new Party({name:'Heroes', faction: 'Good'});
+		let EnemyParty = new Party({name:'Enemies', faction: 'Evil'});
+		this.party
+			.add(HeroParty)
+			.add(EnemyParty)
+		;
+
+		// See settings structure in Settings.Defaults.Unit to customize unit
+		let heroSettings = this.getUnitSettingsByTemplate(Constants.UNIT.TYPE.HERO, {name:`John Wick`});
+		let JohnWick = this.createUnit(heroSettings, Constants.UNIT.TYPE.HERO, Constants.UNIT.PARTY.HERO, 
+			new PIXI.Point(128, 128));
+
 		// JohnWick.angle = 45;
 		this.drawBounds(JohnWick);
 		// console.log(JohnWick);
 		// JohnWick.Weapon.pierce();
 		
 		// Let add another hero
-		
-		heroSettings = {
+		heroSettings = this.getUnitSettingsByTemplate(Constants.UNIT.TYPE.HERO, {
 			name  :`Baba Yaga`, 
-			attrs : {lvl:10, attack:10, immortal:true},
 			model: {
 				colors: {armor: Colors.monokai},
-				textures: {
-					weapon: this.app.textures.Sword, 
-					shield: this.app.textures.Shield, 
-				},
 			}
-		};
-		let BabaYaga = new Hero(heroSettings);
-		BabaYaga.spawnPoint = new PIXI.Point(JohnWick.spawnPoint.x+160, JohnWick.spawnPoint.y+256);
-		this.drawChild(BabaYaga, BabaYaga.spawnPoint.x, BabaYaga.spawnPoint.y);
+		});
+		let BabaYaga = this.createUnit(heroSettings, Constants.UNIT.TYPE.HERO, Constants.UNIT.PARTY.HERO, 
+			new PIXI.Point(JohnWick.spawnPoint.x+160, JohnWick.spawnPoint.y+256));
 		// JohnWick.angle = 45;
 		this.drawBounds(BabaYaga);
 
 
-		let enemySettings = {name:`Bad Guy`, 
-			attrs: {lvl:10, attack:5},
-			model: {
-				textures: {
-					weapon: this.app.textures.Sword,
-					shield: this.app.textures.RoundShield,
-				},
-			},
-		};
-		let BadGuy = new Unit(enemySettings);
-		this.drawChild(BadGuy, JohnWick.spawnPoint.x+256, JohnWick.spawnPoint.y+32);
+		let enemySettings = this.getUnitSettingsByTemplate(Constants.UNIT.TYPE.UNIT, {name:`Bad Guy`});
+		let BadGuy = this.createUnit(enemySettings, Constants.UNIT.TYPE.UNIT, Constants.UNIT.PARTY.ENEMY, 
+			new PIXI.Point(JohnWick.spawnPoint.x+256, JohnWick.spawnPoint.y+32));
 		BadGuy.angle = -135;
 		this.drawBounds(BadGuy);
 
-		// console.log(JohnWick.position);
-		// console.log(Utils.getWorldCenter(JohnWick));
-		// console.log(Utils.getWorldCenter(BadGuy));
-		// console.log(Utils.distance(JohnWick, BadGuy));
-		// console.log(`DistanceBetween`, Utils.distanceBetween(JohnWick, BadGuy));
-
-
-		// IntersectHelper.updateShape(JohnWick, BadGuy);
-		// console.log(JohnWick.shape.collidesRectangle(BadGuy.shape));
-		// console.log(this.getIntersects(JohnWick, BadGuy));
-		
-		this.fighters
-			.add(JohnWick)
-			.add(BabaYaga)
-			.add(BadGuy)
-		;
+		this.party.get(Constants.UNIT.PARTY.HERO).setLeader(JohnWick);
 
 		// Add some obstacles to scene
 		let cratesOnScene = [
-			[128+64, 128],
-			[128+128+64, 128+32],
+			128+64, 128,
+			128+128+64, 128+32,
 			// [256+192, 256],
 			// [256+64, 256+128],
 		];
-		cratesOnScene.forEach( (coords, i) => {
-			let [x,y] = coords;
+		Utils.flatToCoords(cratesOnScene).forEach( (coords, i) => {
 			let crate = new Crate({
 				name: `Crate #${i}`,
 				model: {
 					texture: this.app.textures.Crate,
 				},
 			});
-			this.drawChild(crate, x, y);
+			this.drawChild(crate, coords);
 			// crate.angle = Utils.randomInt(0, 90);
 			this.registry.add(crate);
 		});
-
-
-		// Create parties for our enemies
-		let heroPartyUnits = new Set([BabaYaga]);
-		let HeroParty = new Party({name:'Heroes', faction: 'Good'}, JohnWick, new Set([BabaYaga]));
-		let EnemyParty = new Party({name:'Enemies', faction: 'Evil'}, BadGuy);
-		this.party
-			.add(HeroParty)
-			.add(EnemyParty)
-		;
 
 		IntersectHelper.updateShape(...this.registry.values());
 		// this.registry.forEach(v => console.log(v.name, v.shape.vertices));
@@ -168,53 +129,32 @@ export default class MainScene extends Scene {
 
 		let pathCoords = [];
 		let testCode = () => {
-			this.getMap(true);
+			// this.getMap(true);
 			pathCoords = JohnWick.getPathTo(BadGuy);
 		}
 
-		let res = Utils.perfTest('create map and calculate path', 1, testCode);
-		console.log(`${res.name} in ${res.result.duration/res.n}ms`);
+		let res = Utils.perfTest('create map and calculate path', 10, testCode);
+		console.log(`${res.name} in ${res.result.duration/res.n}ms (${res.result.duration}ms for ${res.n} tests)`);
 
 		this.drawPath(JohnWick, Colors.pink, 16, ...pathCoords);
 
-		console.table([
-			['checkInMainPoly', Utils.sumPerf('checkInMainPoly')],
-			['checkInTooClose', Utils.sumPerf('checkInTooClose')],
-			['checkMiddlePointInside', Utils.sumPerf('checkMiddlePointInside')],
-			['checkEdgesForCross', Utils.sumPerf('checkEdgesForCross')],
-			['InLineOfSight', Utils.sumPerf('InLineOfSight')],
-			['selfCrossing', Utils.sumPerf('selfCrossing')],
-			['vertexCollect', Utils.sumPerf('vertexCollect')],
-			['createGraph', Utils.sumPerf('createGraph')],
-			['calculatePath', Utils.sumPerf('calculatePath')],
-			['AstarAlgorithm', Utils.sumPerf('AstarAlgorithm')],
-			['pointInside', Utils.sumPerf('pointInside')],
-			['LineSegmentsCross', Utils.sumPerf('LineSegmentsCross')],
-		]);
-
-		// console.log(this.map);
-
-		// console.log(this.map.InLineOfSight(JohnWick, BadGuy));
-		// console.log(this.map.InLineOfSight(BadGuy, BabaYaga));
-
-		// let testForeach = () => {
-		// 	Utils.range(10000).forEach((i) => {i++});
-		// }
-		// res = Utils.perfTest('testForeach', 1, testForeach);
-		// console.log(`${res.name} in ${res.result.duration/res.n}ms`);
-
-		// let testFor = () => {
-		// 	for( let i of Utils.range(10000) )
-		// 		i++;
-		// }
-		// res = Utils.perfTest('testFor', 1, testFor);
-		// console.log(`${res.name} in ${res.result.duration/res.n}ms`);
-
-		// performance.mark('testCreateGraph0');
-		// Utils.range(1).forEach(testCode);
-		// performance.measure('testCreateGraph0 measure', 'testCreateGraph0');
-		// console.log(performance.getEntriesByName(`testCreateGraph0 measure`)[0])
-
+		let measures = [
+			'checkInMainPoly', 
+			'checkInTooClose', 
+			'checkMiddlePointInside', 
+			'checkEdgesForCross', 
+			'InLineOfSight', 
+			'selfCrossing', 
+			'vertexCollect', 
+			'createGraph', 
+			'calculatePath', 
+			'AstarAlgorithm', 
+			'pointInside', 
+			'LineSegmentsCross', 
+		];
+		console.table(measures.reduce((a,v)=>{
+			return [...a,[v,Utils.sumPerf(v)/res.n]]
+		}, []));
 
 	}
 
@@ -344,17 +284,10 @@ export default class MainScene extends Scene {
 						},
 					};
 
-					let newBadGuy = new Unit(enemySettings);
-					
-					let appW = this.app.screen.width;
-					let appH = this.app.screen.height;
-					let x = Utils.randomInt(256, appW - 64);
-					let y = Utils.randomInt(64, appH - 64);
-					this.drawChild(newBadGuy, x, y);
-					
-					this.fighters.add(newBadGuy);
-
-					this.party.get('Enemies').hireUnit(newBadGuy);
+					this.createUnit(enemySettings, Constants.UNIT.TYPE.UNIT, Constants.UNIT.PARTY.ENEMY, new PIXI.Point(
+						Utils.randomInt(256, this.app.screen.width - 32),
+						Utils.randomInt(32, this.app.screen.height - 32)
+					));
 				}, 5000);
 
 				return;
@@ -390,22 +323,10 @@ export default class MainScene extends Scene {
 	}
 
 	initMap () {
-			this.map = new PolygonMap();
-			let mapCoords = Utils.flatToCoords([
-					0,0,
-					this.app.screen.width, 0,
-					this.app.screen.width, this.app.screen.height,
-					0, this.app.screen.height
-			]);
-			let mapPolygon = new Polygon(...mapCoords);
-			this.map.polygons.push(mapPolygon);
-			this.registry.forEach( p => {
-				if( p instanceof Unit )
-					return;
-
-				let poly = new Polygon(...Utils.flatToCoords(p.shape.vertices));
-				this.map.polygons.push(poly);
-			});
+			this.map = new PolygonMap(this.app.screen.width, this.app.screen.height);
+			[...this.registry]
+				.filter( p => !(p instanceof Unit) )
+				.forEach( p => this.map.polygons.push(new Polygon( ...Utils.atoc(p.shape.vertices) )) );
 
 			this.map.createGraph();		
 	}
@@ -417,32 +338,52 @@ export default class MainScene extends Scene {
 		return this.map;
 	}
 
-	testObjects () {
-		let rectCont = new PIXI.Container();
-		rectCont.name = 'Container for SomeRect';
-		let rect = Scene.createShape(new PIXI.Rectangle(0, 0, 64, 64), Colors.pink);
-		rect.name = 'Some Rect';
-		rectCont.addChild(rect);
-		rectCont.shape = new IntersectHelper.Rectangle(rectCont);
-		this.drawChild(rectCont, 128+64, 128+64);
-		// rectCont.pivot.x = rectCont.width/2;
-		// rectCont.pivot.y = rectCont.height/2;
-		rectCont.angle += 30;
+	createUnit (settings, 
+		type     = Constants.UNIT.TYPE.UNIT, 
+		party    = Constants.UNIT.PARTY.ENEMY, 
+		position = new PIXI.Point(0,0)
+	) {
+		let unit = new type(settings);
+		unit.spawnPoint = position;
 
-		rectCont.x +=16;
+		this.drawChild(unit, unit.spawnPoint);
+		
+		this.fighters.add(unit);
+		this.party.get(party).hireUnit(unit);
 
-		let sprite = PIXI.Sprite.from(PIXI.Texture.WHITE);
-		sprite.name = 'SomeSprite';
-		sprite.anchor.set(0.5);
-		sprite.shape = new IntersectHelper.Rectangle(sprite);
-		this.drawChild(sprite, 256, 256);
-		// sprite.angle += 45;
-
-		console.log(`rectCont WC`, Utils.getWorldCenter(rectCont));
-		console.log(`rect WC`, Utils.getWorldCenter(rect));
-		console.log(`sprite WC`, Utils.getWorldCenter(sprite));
-
-		IntersectHelper.updateShape(rectCont, sprite);
-		console.log(`Does rectCont and sprite collides?`, rectCont.shape.collidesRectangle(sprite.shape));
+		return unit;
 	}
+
+	getUnitSettingsByTemplate (typeTemplate, customSettings) {
+		let unitSettingsTpl;
+		switch( typeTemplate ) {
+			case Constants.UNIT.TYPE.HERO:
+				unitSettingsTpl = {
+					name  :`Some Hero`, 
+					attrs : {lvl:10, attack:10, immortal:true},
+					model: {
+						colors: {armor: Colors.purple},
+						textures: {
+							weapon: this.app.textures.Sword, 
+							shield: this.app.textures.Shield, 
+						},
+					}
+				};
+				break;
+			default:
+				unitSettingsTpl = {name:`Bad Guy`, 
+					attrs: {lvl:10, attack:5},
+					model: {
+						textures: {
+							weapon: this.app.textures.Sword,
+							shield: this.app.textures.RoundShield,
+						},
+					},
+				};
+				break;
+		}
+
+		return Object.assign({}, unitSettingsTpl, customSettings)
+	}
+
 }
