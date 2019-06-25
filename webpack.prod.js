@@ -1,10 +1,11 @@
 const path = require('path');
+
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 
-const dstDir = 'public';
+const dstDir = './';
 const srcDir = './src';
 
 module.exports = {
@@ -26,7 +27,15 @@ module.exports = {
 		],
 	},
 	plugins: [
-		new CleanWebpackPlugin(),
+		new CleanWebpackPlugin({
+			// dry:true,
+			cleanOnceBeforeBuildPatterns: [
+				'index.html', 
+				'index.js*', 
+				'favicon.ico', 
+				'assets/*', //'!assets/img/decks/**', // exclude decks
+			],
+		}),
 		new CopyWebpackPlugin([
 			{from: './assets/locales', to: './assets/locales', context: srcDir},
 		]),
