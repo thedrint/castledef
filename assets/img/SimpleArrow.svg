@@ -1,0 +1,24 @@
+<svg version="1" xmlns="http://www.w3.org/2000/svg" width="256" height="32">
+	<defs>
+		<rect id="PlumageShape" width="64" height="16"/>
+
+		<rect id="ShaftShape" width="232" height="8"/>
+
+		<path id="PikeShape" 
+			d="m 0 0 
+			l 16 16 
+			h 32
+			z"
+		/>
+
+		<g id="ArrowSide">
+			<use href="#PlumageShape" x="0" y="0" transform="skewX(60)"/>
+			<use href="#PikeShape" x="208" y="0" />
+		</g>
+	</defs>
+	<g id="Arrow">
+		<use href="#ArrowSide" fill="black"/>
+		<use href="#ShaftShape" fill="black" x="8" y="12"/>
+		<use href="#ArrowSide" fill="black" transform="scale(1, -1) translate(0, -32)"/>
+	</g>
+</svg>

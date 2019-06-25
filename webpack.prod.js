@@ -62,6 +62,14 @@ module.exports = {
 					},
 				],
 			},
+			{
+				test: /\.(css)$/,
+				// include: path.resolve(__dirname, srcDir),
+				use: [
+					'style-loader',
+					'css-loader',
+				],
+			},
 		],
 	},
 };
