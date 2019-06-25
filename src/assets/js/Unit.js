@@ -8,7 +8,7 @@ import Utils from './Utils';
 
 import Container from './base/Container';
 
-import Tactic from './base/Tactic';
+import Tactic from './Tactic';
 import Sensor from './Sensor';
 
 import PolygonMap from './pathfind/PolygonMap';

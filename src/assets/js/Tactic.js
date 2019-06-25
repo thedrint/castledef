@@ -1,6 +1,7 @@
+
 import * as PIXI from 'pixi.js';
-import { Game as GameSettings, FPS } from './../Settings';
-import Utils from './../Utils';
+import { Game as GameSettings, FPS } from './Settings';
+import Utils from './Utils';
 
 export default class Tactic {
 
