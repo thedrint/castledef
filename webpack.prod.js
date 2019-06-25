@@ -4,17 +4,17 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 
-const wwwData = 'public';
-const srcData = './src';
+const dstDir = 'public';
+const srcDir = './src';
 
 module.exports = {
 	mode: "production",
 	entry: {
-		index: `${srcData}/index.js`
+		index: `${srcDir}/index.js`
 	},
 	output:
 	{
-		path: path.resolve(__dirname, wwwData),
+		path: path.resolve(__dirname, dstDir),
 		filename: '[name].js',
 		publicPath: './',
 	},
@@ -28,12 +28,12 @@ module.exports = {
 	plugins: [
 		new CleanWebpackPlugin(),
 		new CopyWebpackPlugin([
-			{from: './assets/locales', to: './assets/locales', context: srcData},
+			{from: './assets/locales', to: './assets/locales', context: srcDir},
 		]),
 		new HtmlWebpackPlugin({
 			title: 'CastleDef',
 			// template: './src/index.html',
-			favicon: `${srcData}/favicon.ico`,
+			favicon: `${srcDir}/favicon.ico`,
 		}),
 	],
 	module:
@@ -42,12 +42,12 @@ module.exports = {
 		[
 			{
 				test: /\.(png|jpe?g|gif|svg)$/,
-				include: path.resolve(__dirname, `${srcData}/assets/img`),
+				include: path.resolve(__dirname, `${srcDir}/assets/img`),
 				use: [
 					{
 						loader: 'url-loader',
 						options: {
-							context: srcData, name:'[path][name].[ext]',
+							context: srcDir, name:'[path][name].[ext]',
 							limit: 128,
 						},
 					},

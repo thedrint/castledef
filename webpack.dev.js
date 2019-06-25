@@ -4,34 +4,34 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
-const wwwData = 'dev';
-const srcData = './src';
+const dstDir = 'dev';
+const srcDir = './src';
 
 module.exports = {
 	mode: "development",
 	devtool:"source-map",
 	devServer: {
-		contentBase: path.join(__dirname, wwwData),
+		contentBase: path.join(__dirname, dstDir),
 		publicPath: '/',
 	},
 	entry: {
-		index: `${srcData}/index.js`
+		index: `${srcDir}/index.js`
 	},
 	output:
 	{
-		path: path.resolve(__dirname, wwwData),
+		path: path.resolve(__dirname, dstDir),
 		filename: '[name].js',
 		publicPath: './',
 	},
 	plugins: [
 		new CleanWebpackPlugin(),
 		new CopyWebpackPlugin([
-			{from: './assets/locales', to: './assets/locales', context: srcData},
+			{from: './assets/locales', to: './assets/locales', context: srcDir},
 		]),
 		new HtmlWebpackPlugin({
 			title: 'CastleDef Testing',
 			// template: './src/index.html',
-			favicon: `${srcData}/favicon.ico`,
+			favicon: `${srcDir}/favicon.ico`,
 		}),
 	],
 	module:
@@ -40,12 +40,12 @@ module.exports = {
 		[
 			{
 				test: /\.(ttf|png|jpe?g|gif|svg)$/,
-				include: path.resolve(__dirname, srcData),
+				include: path.resolve(__dirname, srcDir),
 				use: [
 					{
 						loader: 'url-loader',
 						options: {
-							context: srcData, name:'[path][name].[ext]',
+							context: srcDir, name:'[path][name].[ext]',
 							limit: 128,
 						},
 					},
@@ -53,7 +53,7 @@ module.exports = {
 			},
 			{
 				test: /\.(css)$/,
-				// include: path.resolve(__dirname, srcData),
+				// include: path.resolve(__dirname, srcDir),
 				use: [
 					'style-loader',
 					'css-loader',
