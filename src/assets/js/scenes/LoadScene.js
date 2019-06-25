@@ -1,84 +1,75 @@
 
 import * as PIXI from 'pixi.js';
 
+// Local loading of font - have a bug in rendering, use Webfont instead
+// import './../../fonts/PressStart2P.css';
+//TODO: Haha, Webfont loads at first time with bug too
 import { WebFont as WebFontConfig } from './../Settings';
 
+import Utils from './../Utils';
 import Colors from './../Colors';
 
 import Scene from './../Scene';
-
-import Utils from './../Utils';
-
-// load sprites
+// load sprites - we have predefined object list of imported textures
 import { Textures as ImageTextures } from './../../img/Textures';
-
+// reset styles for html (margins, paddings and other)
 import 'reset-css';
-
-// Local loading of font - have a bug in rendering, use Webfont instead
-// import './../../fonts/PressStart2P.css';
 
 export default class LoadScene extends Scene {
 
 	constructor (name, options = {}) {
-		super(name, options);
+		super(name, options);//TODO: options?
 	}
 
-	init () {
-	}
+	init () {}
 
 	preload () {
 		this.resourceLoadingProgress = 0;
 		console.log('SceneLoad preload()');
 		this.preloadWebfonts();
-		// this.preloadResources();
 	}
 
 	preloadWebfonts () {
 		let fonts = this.app.fonts;
-		// Loading fonts first
+		// Loading fonts first - we need ttf to create progressbar
 		let fontsLoading = Object.assign(WebFontConfig, {
 			active: () => {
-				// Then loading other resources
 				this.fontsLoaded = true;
-
+				// Then loading other resources
 				this.preloadResources();
 			}
 		});
 		fonts.load(fontsLoading);
-
 	}
 
 	preloadResources () {
 		let loader = PIXI.Loader.shared;
 		const textures = {};
-
-		for( let i in ImageTextures ) {
-			loader.add(i, ImageTextures[i]);
-		}
+		// Add to queue textures we need
+		for( let name in ImageTextures ) 
+			loader.add(name, ImageTextures[name]);
 
 		loader.load((loader, resources) => {
-			for( let i in resources ) {
-				let key = resources[i].name;
-				textures[key] = resources[i].texture;
-			}
+			for( let name in resources ) 
+				textures[name] = resources[name].texture;
+			
 			Object.assign(this.app.textures, textures);
 		});
 
 		loader.onProgress.add((loader) => {
+			// When resources loading will become really slow - uncomment this and remove imitating in update()
 			// this.resourceLoadingProgress = loader.progress;
 		});
-
 	}
 
 	create () {
 		console.log('SceneLoad create()');
-
 		this.progressbar();
 	}
 
 	update () {
-		// console.log(`LoadScene update(). Progress loading resources is ${this.resourceLoadingProgress}`);
-		this.resourceLoadingProgress += 0.5;
+		// Imitate long process of loading resources (in future it will become real)
+		this.resourceLoadingProgress += 3;
 		this.progressbar(this.resourceLoadingProgress);
 
 		if( this.resourceLoadingProgress >= 100 ) {
@@ -88,6 +79,11 @@ export default class LoadScene extends Scene {
 		}
 	}
 
+	/**
+	 * Very very simple progressbar redraw
+	 * @param  {Number} loadingProgress current progress percentage
+	 * @return {Null}   Nothing
+	 */
 	progressbar (loadingProgress = 0) {
 		if( !this.progressBar ) {
 			let progressBar = new PIXI.Container();
@@ -148,6 +144,7 @@ export default class LoadScene extends Scene {
 			this.lastProgress = loadingProgress;
 		}
 
+		return;
 	}
 
 }
