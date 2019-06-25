@@ -31,12 +31,12 @@ export default class PolygonMap {
   	return this;
   }
 
-	Distance(v1, v2) {
+	Distance (v1, v2) {
 		return Utils.distanceBetween(v1, v2);
 	}
 	
 	//ported from http://www.david-gouveia.com/portfolio/pathfinding-on-a-2d-polygonal-map/
-	InLineOfSight(start, end) {
+	InLineOfSight (start, end) {
 		performance.mark('InLineOfSight()');
 
 		let epsilon = 0.5;

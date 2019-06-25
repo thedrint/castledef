@@ -295,7 +295,7 @@ export default class MainScene extends Scene {
 			}
 		}
 
-		let strategy = fighter.pf.chooseAction();
+		let strategy = fighter.tactic.chooseAction();
 		// console.log(fighter.name, strategy);
 		if( !strategy )
 			return;
@@ -328,7 +328,8 @@ export default class MainScene extends Scene {
 				.filter( p => !(p instanceof Unit) )
 				.forEach( p => this.map.polygons.push(new Polygon( ...Utils.atoc(p.shape.vertices) )) );
 
-			this.map.createGraph();		
+			this.map.createGraph();
+			return this.map;
 	}
 
 	getMap (recreate = false) {

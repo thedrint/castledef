@@ -8,7 +8,8 @@ import Utils from './Utils';
 
 import Container from './base/Container';
 
-import PathfindingStrategy from './base/PathfindingStrategy';
+import Tactic from './base/Tactic';
+import Sensor from './Sensor';
 
 import PolygonMap from './pathfind/PolygonMap';
 import Polygon from './pathfind/Polygon';
@@ -50,7 +51,8 @@ export default class Unit extends Container {
 		this._righthand = undefined;
 		this._lefthand  = undefined;
 
-		this.pf = new PathfindingStrategy(this);
+		this.tactic = new Tactic(this);
+		this.sensor = new Sensor(this);
 	}
 
 	initAttrs (attrs = Defaults.unit.attrs) {
@@ -210,27 +212,7 @@ export default class Unit extends Container {
 	}
 
 	getClosest () {
-		let closest = {enemy:undefined, friend:undefined};
-
-		for( let unit of this.scene.fighters ) {
-			if( unit == this || unit.isDied() )
-				continue;
-
-			let distance = Utils.distance(this, unit);
-			let isEnemy = ( unit.party != this.party );
-			if( isEnemy ) {
-				if( !closest.enemy || closest.enemy.distance > distance ) {
-					closest.enemy = {unit, distance};
-				}
-			}
-			else {
-				if( !closest.friend || closest.friend.distance > distance ) {
-					closest.friend = {unit, distance};
-				}
-			}
-		}
-
-		return closest;
+		return this.sensor.getClosest();
 	}
 
 	backwardStep (from, speed = undefined) {
@@ -267,15 +249,10 @@ export default class Unit extends Container {
 	}
 
 	getLOS (target, color = Colors.black, size = 1) {
-		let wc = this.getCenter();
-		let tc = target.getCenter();
-		let los = Scene.createLine(wc, tc, color, size);
-		los.target = target;
-		return los;
-	}
-
-	inLOS (target) {
-		return this.scene.map.InLineOfSight({x:this.x, y:this.y}, {x:target.x, y:target.y});
+		let los = this.sensor.getLOS(target);
+		let line = Scene.createLine(los.start, los.end, color, size);
+		line.target = target;
+		return line;
 	}
 
 	/**

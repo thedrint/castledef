@@ -152,10 +152,12 @@ export default class Scene extends Container {
 		if( o.losHelper.has(t) )
 			return this;
 
-		let tLOS = o.getLOS(t, color, size);
-		tLOS.name = `LOSHelper`;
-		o.losHelper.set(t, tLOS);
-		this.addChild(tLOS);
+		let los = o.sensor.getLOS(t);
+		let line = Scene.createLine(los.start, los.end, color, size);
+		line.target = t;
+		line.name = `LOSHelper`;
+		o.losHelper.set(t, line);
+		this.addChild(line);
 
 		return this;
 	}

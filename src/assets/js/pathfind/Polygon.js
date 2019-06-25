@@ -3,11 +3,7 @@ import Utils from './../Utils';
 export default class Polygon {
 	
 	constructor (...coords) {
-		this.vertices = [];//new Array<Vector>();
-		this.fermatVertices = [];//new Array<Vector>();
-		if( coords.length ) {
-			this.vertices = coords;
-		}
+		this.vertices = ( coords.length ? coords : [] );// array of points
 	}
 	
 	addPoint (x, y) {
