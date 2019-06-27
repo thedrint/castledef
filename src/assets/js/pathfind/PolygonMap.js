@@ -68,6 +68,8 @@ export default class PolygonMap {
 				let v1 = polygon.vertices[i];
 				let v2 = polygon.vertices[(i + 1) % polygon.vertices.length];
 				if( this.LineSegmentsCross(start, end, v1, v2) ) {
+					performance.measure('checkEdgesForCross', 'checkEdgesForCross()');
+					performance.measure('InLineOfSight', 'InLineOfSight()');
 					return false;
 					//In some cases a 'snapped' endpoint is just a little over the line due to rounding errors. So a 0.5 margin is used to tackle those cases.
 					if( polygon.distanceToSegment(start.x, start.y, v1.x, v1.y, v2.x, v2.y ) > epsilon && polygon.distanceToSegment(end.x, end.y, v1.x, v1.y, v2.x, v2.y ) > epsilon ) {
@@ -80,30 +82,22 @@ export default class PolygonMap {
 		}
 		performance.measure('checkEdgesForCross', 'checkEdgesForCross()');
 
-
 		performance.mark('checkMiddlePointInside()');
 		// Finally the middle point in the segment determines if in LOS or not
-		// WHAT?
-		let v = {x:(start.x + end.x), y: (start.y + end.y)}//Vector.Add(start, end);
-		let v2 = {x:v.x / 2, y:v.y / 2};
-		let inside = this.polygons[0].pointInside(v2);
-		for( let polygon of this.polygons ) {
-			if( polygon == this.polygons[0] ) continue;// Already checked
-			if( polygon.pointInside(v2, false) ) {
+		//TODO: WHAT?
+		let middle = {x:(start.x + end.x) / 2, y:(start.y + end.y) / 2};//Vector.Add(start, end)/2;
+		let inside = this.polygons[0].pointInside(middle);// Check main poly
+		for( let i of Utils.range(this.polygons.length-1,1) ) {// Check others
+			if( this.polygons[i].pointInside(middle, false) ) 
 				inside = false;
-			}
 		}
 		performance.measure('checkMiddlePointInside', 'checkMiddlePointInside()');
-
 		performance.measure('InLineOfSight', 'InLineOfSight()');
 		return inside;
 	}
 
-	
-
 	createGraph () {
 		performance.mark('createGraph()');
-
 		this.mainwalkgraph = new Graph();
 		let first = true;
 		this.vertices_concave = [];
@@ -125,7 +119,6 @@ export default class PolygonMap {
 		}
 		performance.measure('vertexCollect', 'vertexCollect()');
 
-
 		performance.mark('selfCrossing()');
 		this.vertices_concave.forEach( (v1, c1) => {
 			this.vertices_concave.forEach( (v2, c2) => {
@@ -135,44 +128,29 @@ export default class PolygonMap {
 			});
 		});
 		performance.measure('selfCrossing', 'selfCrossing()');
-
 		performance.measure('createGraph', 'createGraph()');
 	}
 	
 	//ported from http://www.david-gouveia.com/portfolio/pathfinding-on-a-2d-polygonal-map/
 	LineSegmentsCross (a, b, c, d){
 		performance.mark('LineSegmentsCross()');
-		if( false ) {
-			//TIP: This implementation is good readed, but slow more than 2 times
-			let intersect = Utils.linesIntersect(a.x, a.y, b.x, b.y, c.x, c.y, d.x, d.y);
-			performance.measure('LineSegmentsCross', 'LineSegmentsCross()');
-			return intersect != null;			
-		}
-
 		let denominator = ((b.x - a.x) * (d.y - c.y)) - ((b.y - a.y) * (d.x - c.x));
-
-		if (denominator == 0)
-		{
+		if (denominator == 0) {
 			performance.measure('LineSegmentsCross', 'LineSegmentsCross()');
 			return false;
 		}
 
 		let numerator1 = ((a.y - c.y) * (d.x - c.x)) - ((a.x - c.x) * (d.y - c.y));
-
 		let numerator2 = ((a.y - c.y) * (b.x - a.x)) - ((a.x - c.x) * (b.y - a.y));
-
-		if (numerator1 == 0 || numerator2 == 0)
-		{
+		if (numerator1 == 0 || numerator2 == 0) {
 			performance.measure('LineSegmentsCross', 'LineSegmentsCross()');
 			return false;
 		}
 
 		let r = numerator1 / denominator;
 		let s = numerator2 / denominator;
-
 		performance.measure('LineSegmentsCross', 'LineSegmentsCross()');
 		return (r > 0 && r < 1) && (s > 0 && s < 1);
-
 	}
 
 	//ported from http://www.david-gouveia.com/portfolio/pathfinding-on-a-2d-polygonal-map/

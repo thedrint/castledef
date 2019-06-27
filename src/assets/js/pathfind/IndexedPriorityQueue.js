@@ -5,6 +5,8 @@ import Utils from './../Utils';
  * Code is ported to es6 and modified when needed
  * http://code.tutsplus.com/tutorials/artificial-intelligence-series-part-1-path-finding--active-4439
  */
+
+// Simple priority queue
 export default class IndexedPriorityQueue {
 
 	constructor (keys = []) {

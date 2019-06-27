@@ -2,7 +2,7 @@
 import * as PIXI from 'pixi.js';
 import IntersectHelper from './IntersectHelper';
 
-import { Game as GameSettings, Defaults } from './Settings';
+import { Game as GameSettings, Defaults, FPS } from './Settings';
 
 import Utils from './Utils';
 
@@ -174,6 +174,11 @@ export default class Unit extends Container {
 		return this.attrs.hp <= 0;
 	}
 
+	die () {
+		this.emit('die');
+		this.destroy();
+	}
+
 	getFullMp () {
 		let fullMp = this.attrs.lvl * 10;
 		return fullMp;
@@ -213,6 +218,12 @@ export default class Unit extends Container {
 
 	getClosest () {
 		return this.sensor.getClosest();
+	}
+
+	followTo (target, speedInPixels = undefined) {
+		if( !speedInPixels )
+			speedInPixels = this.getSpeed()/FPS.target;
+		return super.followTo(target, speedInPixels);
 	}
 
 	backwardStep (from, speed = undefined) {
@@ -262,7 +273,7 @@ export default class Unit extends Container {
 	 */
 	getPathTo (target) {
 		this.scene.getMap();// init scene.map object if not inited before
-		this.scene.map.calculatePath(this.getCenter(), target.getCenter());
+		this.scene.map.calculatePath(this, target);
 		return this.scene.map.getPathNodes();
 	}
 

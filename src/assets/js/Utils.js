@@ -684,23 +684,29 @@ export default class Utils {
 		}, []);
 	}
 
-	static perfTest (name, times = 1, code = undefined) {
-		if( typeof code != 'function' )
-			return false;
+	static perfTest (name = 'perfTest', times = 1, code = () => {}, showIterations = false) {
+		if( typeof code != 'function' ) return false;
 
 		let test = {n:times,name:name};
 		performance.mark(test.name);
-		Utils.range(test.n).forEach(() => code());
+		Utils.range(test.n).forEach((i) => {
+			if( showIterations ) console.log(`${test.name} #${i+1}`);
+			code();
+		});
 		performance.measure(`${test.name} measure`, test.name);
 		test.result = performance.getEntriesByName(`${test.name} measure`)[0];
 		// performance.clearMarks();
 		// performance.clearMeasures();
 		return test;
-
 	}
 
 	static sumPerf (name) {
 		return performance.getEntriesByName(name).reduce((a,v) => {return a + v.duration}, 0);
+	}
+
+	static avgPerf (name) {
+		let perf = performance.getEntriesByName(name);
+		return perf.reduce((a,v) => {return a + v.duration}, 0)/perf.length;
 	}
 
 }

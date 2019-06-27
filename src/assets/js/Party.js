@@ -65,6 +65,7 @@ export default class Party {
 				// by default move unit to its native division
 				this.setUnitDivision(unit)
 				//TODO: callbacks
+				unit.once('die', () => this.disbandUnit(unit), this);
 			}
 			return this;
 		}

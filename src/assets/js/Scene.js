@@ -104,11 +104,10 @@ export default class Scene extends Container {
 		return this;
 	}
 
-	removeBounds (o) {
-		if( o.boundsHelper ) {
-			o.boundsHelper.destroy();
-		}
-
+	removeBounds (...obj) {
+		obj.forEach( o => {
+			if( o.boundsHelper ) o.boundsHelper.destroy();
+		});
 		return this;
 	}
 
@@ -162,10 +161,10 @@ export default class Scene extends Container {
 		return this;
 	}
 
-	removeLOS (o, t) {
+	removeLOS (o, t = undefined) {
 		if( !o.losHelper ) 
 			return this;
-
+		
 		let tLOS = o.losHelper.get(t);
 		o.losHelper.delete(t);
 		tLOS.destroy();

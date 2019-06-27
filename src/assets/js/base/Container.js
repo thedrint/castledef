@@ -35,10 +35,7 @@ export default class Container extends PIXI.Container {
 		}
 	}
 
-	followTo (target, speedInPixels = undefined) {
-		if( !speedInPixels )
-			speedInPixels = this.getSpeed()/FPS.target;
-		
+	followTo (target, speedInPixels = undefined) {		
 		let angularVelocity = Angle.PI_2/FPS.target;
 		let targetAngle = Utils.getPointAngle(this, target);
 		let diff = Angle.differenceAngles(targetAngle, this.rotation);

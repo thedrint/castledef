@@ -1,7 +1,9 @@
 
 import ItemManager from './base/ItemManager';
 /**
- * Logical structure for manage units in scene
+ * Logical structure for manage units in scene.
+ * UnitManager works in pair with RegistryManager.
+ * UnitManager can add, get and delete units
  */
 export default class UnitManager extends ItemManager {
 
@@ -12,6 +14,7 @@ export default class UnitManager extends ItemManager {
 
 	add (unit) {
 		super.add(unit);
+		unit.once('die', () => this.delete(unit), this);
 		this.scene.registry.add(unit);
 		return this;
 	}

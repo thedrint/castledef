@@ -7,28 +7,21 @@ import IndexedPriorityQueue from './IndexedPriorityQueue';
  * http://code.tutsplus.com/tutorials/artificial-intelligence-series-part-1-path-finding--active-4439
  */
 export default class AstarAlgorithm {
-	// public var graph:Graph;
-	// public var SPT:Array<GraphEdge>;
-	// public var G_Cost:Array<Float>;	//This array will store the G cost of each node
-	// public var F_Cost:Array<Float>;	//This array will store the F cost of each node
-	// public var SF:Array<GraphEdge>;
-	// public var source:Int;
-	// public var target:Int;
 
 	constructor (graph,source,target) {
-		this.graph = graph;
-		this.source = source;
-		this.target = target;
+		this.graph  = graph;  // Calculated graph
+		this.source = source; // Path start node index
+		this.target = target; // Path end node index
 		
-		this.SPT= [];//new Array<GraphEdge>();
-		this.G_Cost = [];//new Array<Float>();
-		this.F_Cost = [];//new Array<Float>();
-		this.SF = [];//new Array<GraphEdge>();
+		this.SPT= [];
+		this.G_Cost = []; //This array will store the G cost of each node
+		this.F_Cost = []; //This array will store the F cost of each node
+		this.SF = [];
 		
-		for( let i of Utils.range(graph.nodes.length) ) {
+		graph.nodes.forEach( (v,i) => {
 			this.G_Cost[i] = 0;
 			this.F_Cost[i] = 0;
-		}
+		});
 		
 		this.search();
 	}
@@ -45,13 +38,10 @@ export default class AstarAlgorithm {
 			}
 
 			let edges = this.graph.edges[NCN];
-			// console.log('edges', edges);
-			// console.log('nodes', this.graph.nodes);
 			for( let edge of edges ) {
-				// console.log('edge', edge);
 				// let Hcost = Vector.Subtract(this.graph.nodes[edge.to].pos, this.graph.nodes[this.target].pos).length;
 				// let Hcost = this.graph.nodes[edge.to].pos.distanceTo(this.graph.nodes[this.target].pos);
-				// console.log('node edge.to', this.graph.nodes[edge.to], 'node target', this.graph.nodes[this.target]);
+				// In this game Hcost is only distance
 				let Hcost = Utils.distanceBetween(this.graph.nodes[edge.to].pos, this.graph.nodes[this.target].pos);
 				let Gcost = this.G_Cost[NCN] + edge.cost;
 				let to = edge.to;
