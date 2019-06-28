@@ -19,7 +19,7 @@ export default class Test {
 		JohnWick.scene.drawPath(JohnWick, Colors.pink, 16, ...pathCoords);
 
 		let measures = [
-			'checkInMainPoly', 
+			// 'checkInMainPoly', 
 			'checkInTooClose', 
 			'checkMiddlePointInside', 
 			'checkEdgesForCross', 
@@ -27,7 +27,7 @@ export default class Test {
 			'selfCrossing', 
 			'vertexCollect', 
 			'calculatePath', 
-			'AstarAlgorithm', 
+			'PathfindAlgorithm', 
 			'pointInside', 
 			'LineSegmentsCross', 
 		];
