@@ -38,12 +38,16 @@ export default class Test {
 	}
 
 	static seekAndDestroy (scene) {
-		Utils.perfTest(`seekAndDestroy`, 1000, () => {
+		Utils.perfTest(`seekAndDestroy`, 10, (iteration) => {
 			scene.fighters.forEach( fighter => {
 				scene.seekAndDestroy(fighter);
 			});
 		}, false);
 		console.log('Test completed!!!');
+	}
+
+	static getWeaponAngle (JohnWick, BadGuy) {
+		JohnWick.getWeaponTargetAngle(BadGuy);
 	}
 
 }

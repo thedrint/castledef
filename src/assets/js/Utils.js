@@ -1,5 +1,6 @@
 
 import * as PIXI from 'pixi.js';
+import * as Angle from 'yy-angle';
 import * as FERMAT from '@mathigon/fermat'
 import {geom} from 'jsts'
 
@@ -689,9 +690,9 @@ export default class Utils {
 
 		let test = {n:times,name:name};
 		performance.mark(test.name);
-		Utils.range(test.n).forEach((i) => {
-			if( showIterations ) console.log(`${test.name} #${i+1}`);
-			code();
+		Utils.range(test.n).forEach((iteration) => {
+			if( showIterations ) console.log(`${test.name} #${iteration+1}`);
+			code(iteration);
 		});
 		performance.measure(`${test.name} measure`, test.name);
 		test.result = performance.getEntriesByName(`${test.name} measure`)[0];

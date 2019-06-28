@@ -21,9 +21,8 @@ export default class Application extends PIXI.Application {
 		this.textures = {};
 
 		this.initScenes();
-		this.ticker.speed = 0.1;
 
-		this.ticker.add((dt) => { TWEEN.update(); this.stage.getCurrentScene().update(); });
+		this.ticker.add((dt) => { TWEEN.update(); this.stage.getCurrentScene().update();});
 	}
 
 	initScenes () {

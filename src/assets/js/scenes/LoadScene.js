@@ -58,7 +58,12 @@ export default class LoadScene extends Scene {
 
 		loader.onProgress.add((loader) => {
 			// When resources loading will become really slow - uncomment this and remove imitating in update()
-			// this.resourceLoadingProgress = loader.progress;
+			this.resourceLoadingProgress = loader.progress;
+			if( this.resourceLoadingProgress >= 100 ) {
+				console.log(`Switching to MainScene`);
+				//TODO: make switch through animation/fade out/blur/etc
+				this.app.stage.switchTo("MainScene");
+			}
 		});
 	}
 
@@ -69,14 +74,14 @@ export default class LoadScene extends Scene {
 
 	update () {
 		// Imitate long process of loading resources (in future it will become real)
-		this.resourceLoadingProgress += 3;
+		// this.resourceLoadingProgress += 3;
 		this.progressbar(this.resourceLoadingProgress);
 
-		if( this.resourceLoadingProgress >= 100 ) {
-			console.log(`Switching to MainScene`);
-			//TODO: make switch through animation/fade out/blur/etc
-			this.app.stage.switchTo("MainScene");
-		}
+		// if( this.resourceLoadingProgress >= 100 ) {
+		// 	console.log(`Switching to MainScene`);
+		// 	//TODO: make switch through animation/fade out/blur/etc
+		// 	this.app.stage.switchTo("MainScene");
+		// }
 	}
 
 	/**

@@ -39,7 +39,7 @@ export default class Sensor {
 		return (this.getDistanceTo(enemy) <= GameSettings.unit.size*2 );
 	}
 
-	isEnemiesVisible () {//TODO: Implement
+	isEnemiesVisible () {
 		for( let party of this.unit.scene.party.parties.values() ) {
 			if( this.unit.party == party ) continue;// Skip unit party
 			for( let unit of party.units ) {
@@ -58,6 +58,10 @@ export default class Sensor {
 
 	getDistanceTo (unit) {
 		return Utils.distanceBetween(this.unit, unit);
+	}
+
+	getEnemyParties () {
+		return Array.from(this.unit.scene.party.parties.values()).filter( party => party != this.unit.party );
 	}
 
 	getClosest () {
@@ -86,8 +90,7 @@ export default class Sensor {
 
 	getClosestEnemy () {
 		let closest = undefined;
-		this.unit.scene.party.parties.forEach( party => {
-			if( this.unit.party == party ) return;// Skip unit party
+		this.getEnemyParties().forEach( party => {
 			party.units.forEach( unit => {
 				if( unit.isDied() ) return;// Skip deads
 				let distance = Utils.distanceBetween(this.unit, unit);

@@ -1,6 +1,8 @@
 
 import * as PIXI from 'pixi.js';
 import IntersectHelper from './IntersectHelper';
+import * as Angle from 'yy-angle';
+import Vector from './base/Vector';
 
 import { Game as GameSettings, Defaults, FPS } from './Settings';
 
@@ -80,29 +82,35 @@ export default class Unit extends Container {
 		let models = [];
 		// let body = Scene.createShape(new PIXI.Ellipse(0, 0, radius, radius), params.armorColor);
 		let body = new Body({model:{color:params.colors.armor}});
-		body.setTransform(0, 0);
+		body.spawnPoint = new PIXI.Point(0,0);
+		body.setTransform(body.spawnPoint.x, body.spawnPoint.y);
 		models.push(body);
 
 		let helmet = new Helmet({model:{color:params.colors.helmet}});
-		helmet.setTransform(0, 0);
+		helmet.spawnPoint = new PIXI.Point(0,0);
+		helmet.setTransform(helmet.spawnPoint.x, helmet.spawnPoint.y);
 		models.push(helmet);
 
 		let weapon = new Weapon({model:{color:params.colors.weapon, texture: params.textures.weapon}});
-		weapon.x = 0;
-		weapon.y = params.size/2;
+		weapon.spawnPoint = new PIXI.Point(0,params.size/2);
+		weapon.x = weapon.spawnPoint.x;
+		weapon.y = weapon.spawnPoint.y;
+		// weapon.setTransform(weapon.spawnPoint.x, weapon.spawnPoint.y);
 		// weapon.angle = -10;
 		this.rightHand = weapon;
 		models.push(weapon);
 
 		let bodyRadius = radius;
-		let shieldAngle = 45;
+		let shieldAngle = 0;
 		let shieldDot = {
 			x: bodyRadius*Math.sin(shieldAngle),
 			y: -bodyRadius*Math.cos(shieldAngle),
 		}
 		let shield = new Shield({model:{color:params.colors.shield, texture: params.textures.shield}});
-		shield.x = shieldDot.x;
-		shield.y = shieldDot.y;
+		shield.spawnPoint = new PIXI.Point(shieldDot.x,shieldDot.y);
+		shield.x = shield.spawnPoint.x;
+		shield.y = shield.spawnPoint.y;
+		// shield.setTransform(shield.spawnPoint.x, shield.spawnPoint.y);
 		shield.angle = shieldAngle;
 		this.leftHand = shield;
 		models.push(shield);
@@ -208,12 +216,22 @@ export default class Unit extends Container {
 	}
 
 	getWeaponTargetAngle (target) {
-		let tc = Utils.getLocal(target);
-		let weapon = this.Weapon;
-		let lc = Utils.getLocal(weapon);
-		let wc = weapon.toGlobal(lc);
-		let targetAngle = Utils.getPointAngle(wc, tc);
-		return targetAngle;
+		// Distance between unit center and weapon hand
+		let distanceToHand = new Vector().copyFrom(this.Weapon.spawnPoint).length;
+		// Vector that looks at target's center (in unit local)
+		let vecTarget = new Vector().copyFrom(this.toLocal(target));
+		// Vector that looks at target point - this point in mirror of unit's weapon
+		let vecDestination = vecTarget.clone().rotate(-Math.PI/2);
+		vecDestination.length = distanceToHand;
+		// This is new point in unit local where unit must look, if he want to pierce target's center
+		vecTarget.add(vecDestination);
+		let targetPoint = this.toGlobal(vecTarget);
+		// console.log(this.name, targetPoint);
+		// Now we can get angle
+		let targetRad = Utils.getPointAngle(this, targetPoint);
+		let targetDeg = Angle.toDegrees(targetRad);
+		// console.log(`${this.name} targetPoint is`, targetPoint, `and targetAngle is ${targetDeg} deg`);
+		return targetRad;
 	}
 
 	getClosest () {

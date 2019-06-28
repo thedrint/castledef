@@ -36,43 +36,28 @@ export default class Container extends PIXI.Container {
 	}
 
 	followTo (target, speedInPixels = undefined) {		
-		let angularVelocity = Angle.PI_2/FPS.target;
-		let targetAngle = Utils.getPointAngle(this, target);
-		let diff = Angle.differenceAngles(targetAngle, this.rotation);
-		let sign = Angle.differenceAnglesSign(targetAngle, this.rotation);
-		if( diff > Constants.ONE_DEGREE * 5 ) {
-			if( diff >= angularVelocity ) {
-				this.rotateBy(sign*angularVelocity);
-			}
-			else {
-				this.rotateTo(targetAngle);
-			}			
-		}
-		else {
+		if( !this.discreteRotate(Utils.getPointAngle(this, target)) )
 			this.moveTo(target, speedInPixels);
-		}
-
 		return this;
 	}
 
-	easeRotateTo(targetAngle) {
-		let angularVelocity = Angle.PI_2/FPS.target;
-		let diff = Angle.differenceAngles(targetAngle, this.rotation);
-		let sign = Angle.differenceAnglesSign(targetAngle, this.rotation);
-		if( diff > Constants.ONE_DEGREE * 5 ) {
-			if( diff >= angularVelocity ) {
-				this.rotateBy(sign*angularVelocity);
-			}
-			else {
-				this.rotateTo(targetAngle);
-			}			
-		}
-
+	easeRotateTo(targetRotation) {
+		this.discreteRotate(targetRotation);
 		return this;
 	}
 
-	getAngleTo(target) {
-
+	discreteRotate (targetRotation) {
+		let angularVelocity = this.getAngularVelocity();
+		let diff = Angle.differenceAngles(targetRotation, this.rotation);
+		if( diff < Constants.ONE_DEGREE*2 ) 
+			return false;// No need to rotate
+		if( diff >= angularVelocity ) 
+			this.rotateBy(Angle.differenceAnglesSign(targetRotation, this.rotation)*angularVelocity);
+		else 
+			this.rotateTo(targetRotation);
+		return true;// Some rotate was doing
 	}
+
+	getAngularVelocity () { return Angle.PI_2/FPS.target; }
 
 }

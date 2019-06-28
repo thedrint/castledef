@@ -64,7 +64,7 @@ export default class MainScene extends Scene {
 		// Now create first enemy
 		let enemySettings = this.getUnitSettingsByTemplate(Constants.UNIT.TYPE.UNIT, {name:`Bad Guy`});
 		let BadGuy = this.createUnit(enemySettings, Constants.UNIT.TYPE.UNIT, Constants.UNIT.PARTY.ENEMY, 
-			new PIXI.Point(JohnWick.spawnPoint.x+256, JohnWick.spawnPoint.y+32));
+			new PIXI.Point(JohnWick.spawnPoint.x+128, JohnWick.spawnPoint.y+0));
 		BadGuy.angle = -135;
 		// Let First hero became a leader
 		this.party.get(Constants.UNIT.PARTY.HERO).setLeader(JohnWick);
@@ -93,22 +93,16 @@ export default class MainScene extends Scene {
 		//TESTAREA
 		// Test.getPath(JohnWick, BadGuy);
 		// Test.seekAndDestroy(this);
+		// Test.getWeaponAngle(JohnWick, BadGuy);
 	}
 
 	// Main update loop of scene
 	update () {
-		// When all objects are created and drawed - updated their shapes for collider
-		// IntersectHelper.updateShape(...this.fighters.values());
 		this.fighters.forEach( fighter => {
 			//TODO: What if deads can moves?
 			if( fighter.isDied() ) return;
-
 			this.seekAndDestroy(fighter);
-			//DEBUG: next only for debug
-			// let closest = fighter.getClosest();
-			// this.drawLOS(fighter, closest.enemy.unit, Colors.green, 1);
-			// this.registry.forEach(v => this.drawBounds(v));
-			// this.drawBounds(fighter.Shield, Colors.metal).drawBounds(fighter.Weapon, Colors.pink);
+			// this.drawFighterHelpers(fighter);
 		});
 	}
 
@@ -120,8 +114,9 @@ export default class MainScene extends Scene {
 		}
 		fighter.tactic.pool.executeCurrent();
 		// Destroy
-		let closest = fighter.sensor.closest;
-		this.clash(fighter, closest);
+		let closest = fighter.sensor.getClosestEnemy();
+		if( closest )
+			this.clash(fighter, closest);
 	}
 
 	getFighterIntersects (fighter, enemy) {
@@ -155,10 +150,8 @@ export default class MainScene extends Scene {
 		return checkIntersects;
 	}
 
-	clash (fighter, closest) {
-		if( !closest.enemy ) return;
-
-		let enemy = closest.enemy.unit;
+	clash (fighter, closestEnemy) {
+		let enemy = closestEnemy.unit;
 		let collides = this.getFighterIntersects(fighter, enemy);
 		let isInterects = false;
 			// console.log(collides);
@@ -277,6 +270,14 @@ export default class MainScene extends Scene {
 		}
 
 		return Object.assign({}, unitSettingsTpl, customSettings)
+	}
+
+	drawFighterHelpers (f) {
+		this.drawBounds(f.Shield, Colors.metal).drawBounds(f.Weapon, Colors.pink);
+	}
+
+	drawHelpers () {
+		this.registry.forEach(v => this.drawBounds(v));		
 	}
 
 }

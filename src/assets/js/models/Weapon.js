@@ -6,10 +6,6 @@ import IntersectHelper from './../IntersectHelper';
 import { Game as GameSettings, Defaults } from './../Settings';
 import Utils from './../Utils';
 
-import Graphics from './../base/Graphics';
-
-import Scene from './../Scene';
-
 export default class Weapon extends PIXI.Container {
 
 	constructor (settings = {
@@ -37,45 +33,25 @@ export default class Weapon extends PIXI.Container {
 
 	initModel (model = Defaults.weapon.model) {
 		let params = Utils.cleanOptionsObject(model, Defaults.weapon.model);
+		let models = [];
 
 		let bladeLength = params.size * GameSettings.unit.size;
-		let bladeWidth = 3;//TODO: Replace magic number with setting or formula
 
-		let guardWidth = bladeWidth + 3*2;
-		let guardDepth = 3;
-
-		let models = [];
-		let blade, bladeTexture;
-		if( params.texture && params.texture.baseTexture ) {
-			// console.log(params.texture);
-			let res = params.texture.baseTexture.resource;
-			
-			let svgTexture = PIXI.BaseTexture.from(res);
-			svgTexture.setSize(bladeLength, res.height * bladeLength/res.width);
-			let bladeTexture = new PIXI.Texture(svgTexture);
-			// bladeTexture.defaultAnchor = new PIXI.Point(0, bladeTexture.height/2);
-			blade = PIXI.Sprite.from(bladeTexture);
-			blade.name = `Blade`;
-			models.push(blade);
-		}
-		else {// For compability
-			blade = Scene.createShape(new PIXI.Rectangle(0, 0, bladeLength, bladeWidth), params.color);
-			blade.name = `Blade`;
-
-			let guard = Scene.createShape(new PIXI.Rectangle(bladeLength/4, -guardWidth/2, guardDepth, guardWidth), params.color);
-			guard.name = `Guard`;
-			models.push(guard);
-			models.push(blade);
-		}
-
+		let res = params.texture.baseTexture.resource;
+		let svgTexture = PIXI.BaseTexture.from(res);
+		svgTexture.setSize(bladeLength, res.height * bladeLength/res.width);
+		let bladeTexture = new PIXI.Texture(svgTexture);
+		let blade = PIXI.Sprite.from(bladeTexture);
+		blade.anchor.set(0.2,0.5);// For every texture it must be set individually
+		blade.name = `Blade`;
+		models.push(blade);
 
 		this.addChild(...models);
-
 		this.shape = new IntersectHelper.Rectangle(this);
 	}
 
 	getModel () {
-		return this.getChildByName('Blade');
+		return this.getChildByName(`Blade`);
 	}
 	getLength () {
 		return this.width;
