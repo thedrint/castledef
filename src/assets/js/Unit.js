@@ -18,6 +18,8 @@ import Helmet from './models/Helmet';
 import Weapon from './models/Weapon';
 import Shield from './models/Shield';
 
+import Test from './Test';
+
 export default class Unit extends Container {
 
 	constructor (settings = Defaults.unit) {
@@ -240,6 +242,7 @@ export default class Unit extends Container {
 	getPathTo (target) {
 		this.scene.getMap();// init scene.map object if not inited before
 		this.scene.map.calculatePath(this, target);
+		// Test.showMeasures();
 		return this.scene.map.getPathNodes();
 	}
 

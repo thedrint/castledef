@@ -18,6 +18,23 @@ export default class Test {
 
 		JohnWick.scene.drawPath(JohnWick, Colors.pink, 16, ...pathCoords);
 
+		this.showMeasures();
+	}
+
+	static seekAndDestroy (scene) {
+		Utils.perfTest(`seekAndDestroy`, 10, (iteration) => {
+			scene.fighters.forEach( fighter => {
+				scene.seekAndDestroy(fighter);
+			});
+		}, false);
+		console.log('Test completed!!!');
+	}
+
+	static getWeaponAngle (JohnWick, BadGuy) {
+		JohnWick.getWeaponTargetAngle(BadGuy);
+	}
+
+	static showMeasures () {
 		let measures = [
 			// 'checkInMainPoly', 
 			'checkInTooClose', 
@@ -32,22 +49,11 @@ export default class Test {
 			'LineSegmentsCross', 
 		];
 		let table = measures
-			.reduce((a,v)=>{ return [...a,[v,Utils.sumPerf(v)/res.n]] }, []);
+			.reduce((a,v)=>{ return [...a,[v,Utils.sumPerf(v)]] }, []);
 		table.push(['createGraph', Utils.avgPerf('createGraph')]);
-		console.table(table);
-	}
-
-	static seekAndDestroy (scene) {
-		Utils.perfTest(`seekAndDestroy`, 10, (iteration) => {
-			scene.fighters.forEach( fighter => {
-				scene.seekAndDestroy(fighter);
-			});
-		}, false);
-		console.log('Test completed!!!');
-	}
-
-	static getWeaponAngle (JohnWick, BadGuy) {
-		JohnWick.getWeaponTargetAngle(BadGuy);
+		console.table(table)
+		performance.clearMarks();		
+		performance.clearMeasures();		
 	}
 
 }

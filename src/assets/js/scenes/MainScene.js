@@ -53,22 +53,25 @@ export default class MainScene extends Scene {
 		// Create heroes and enemies
 		// See settings structure in Settings.Defaults.Unit to customize unit
 		let heroTpl = this.getUnitSettingsByTemplate(UNIT.TYPE.HERO, {name:`John Wick`});
-		let JohnWick = this.createUnit(heroTpl, UNIT.TYPE.HERO, UNIT.PARTY.HERO, new Vector(128, 128));
+		let JohnWick = this.createUnit(heroTpl, UNIT.TYPE.HERO, UNIT.PARTY.HERO, new Vector(64, 128));
 		// Let add another hero
 		heroTpl = this.getUnitSettingsByTemplate(UNIT.TYPE.HERO, {name  :`Baba Yaga`, 
 			model: {colors: {armor: Colors.monokai} }
 		});
-		let BabaYaga = this.createUnit(heroTpl, UNIT.TYPE.HERO, UNIT.PARTY.HERO, JohnWick.spawnPoint.clone().add(160,256));
+		let BabaYaga = this.createUnit(heroTpl, UNIT.TYPE.HERO, UNIT.PARTY.HERO, JohnWick.spawnPoint.clone().add(0,128));
 		// Now create first enemy
 		let enemyTpl = this.getUnitSettingsByTemplate(UNIT.TYPE.UNIT, {name:`Bad Guy`});
-		let BadGuy = this.createUnit(enemyTpl, UNIT.TYPE.UNIT, UNIT.PARTY.ENEMY, JohnWick.spawnPoint.clone().add(128,0));
+		let BadGuy = this.createUnit(enemyTpl, UNIT.TYPE.UNIT, UNIT.PARTY.ENEMY, new Vector(512,256));
 		BadGuy.angle = -135;
 		// Let First hero became a leader
 		this.party.get(UNIT.PARTY.HERO).setLeader(JohnWick);
 
 		// Add some obstacles to scene
 		let cratesOnScene = [
-			128+64, 128,
+			128, 128,
+			128, 128+64,
+			128, 128+128,
+			128, 128+128+64,
 			128+128+64, 128+32,
 			// [256+192, 256],
 			// [256+64, 256+128],
