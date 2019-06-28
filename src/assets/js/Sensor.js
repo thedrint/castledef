@@ -40,8 +40,7 @@ export default class Sensor {
 	}
 
 	isEnemiesVisible () {
-		for( let party of this.unit.scene.party.parties.values() ) {
-			if( this.unit.party == party ) continue;// Skip unit party
+		for( let party of this.getEnemyParties() ) {
 			for( let unit of party.units ) {
 				if( unit.isDied() ) continue;// Skip deads
 				if( this.inLOS(unit) )
@@ -61,7 +60,7 @@ export default class Sensor {
 	}
 
 	getEnemyParties () {
-		return Array.from(this.unit.scene.party.parties.values()).filter( party => party != this.unit.party );
+		return this.unit.scene.party.asArray().filter( party => party != this.unit.party );
 	}
 
 	getClosest () {

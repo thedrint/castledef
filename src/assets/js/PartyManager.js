@@ -38,4 +38,8 @@ export default class PartyManager {
 		return this.parties.clear();
 	}
 
+	asArray () {
+		return [...this.parties.values()];
+	}
+
 }
