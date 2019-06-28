@@ -1,8 +1,8 @@
 
 import * as PIXI from 'pixi.js';
-import * as Angle from 'yy-angle';
-import * as FERMAT from '@mathigon/fermat'
-import {geom} from 'jsts'
+// import * as Angle from 'yy-angle';
+// import * as FERMAT from '@mathigon/fermat'
+// import {geom} from 'jsts'
 
 export default class Utils {
 
@@ -654,14 +654,14 @@ export default class Utils {
 	 * @param ...points first 4 points for first line segment, next 4 for second line segment
 	 * @return bool 
 	 */
-	static linesIntersect (...points)
-	{
-		let [a, b, c, d, p, q, r, s] = points;
-		// console.log(`a, b, c, d, p, q, r, s`, a, b, c, d, p, q, r, s);
-		let s1 = new geom.LineSegment(new geom.Coordinate(a,b), new geom.Coordinate(c,d));
-		let s2 = new geom.LineSegment(new geom.Coordinate(p,q), new geom.Coordinate(r,s));
-		return s1.intersection(s2);
-	}
+	// static linesIntersect (...points)
+	// {
+	// 	let [a, b, c, d, p, q, r, s] = points;
+	// 	// console.log(`a, b, c, d, p, q, r, s`, a, b, c, d, p, q, r, s);
+	// 	let s1 = new geom.LineSegment(new geom.Coordinate(a,b), new geom.Coordinate(c,d));
+	// 	let s2 = new geom.LineSegment(new geom.Coordinate(p,q), new geom.Coordinate(r,s));
+	// 	return s1.intersection(s2);
+	// }
 
 	static unique () {
 		return `f${(~~(Math.random()*1e8)).toString(16)}`;

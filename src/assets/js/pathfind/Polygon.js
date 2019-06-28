@@ -1,5 +1,6 @@
 
 import Utils from './../Utils';
+
 export default class Polygon {
 	
 	constructor (...coords) {

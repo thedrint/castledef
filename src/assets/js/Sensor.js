@@ -1,7 +1,7 @@
 
 import * as PIXI from 'pixi.js';
 import Utils from './Utils';
-import { Game as GameSettings, Unit as UnitSettings } from './Settings';
+import { Unit as UnitSettings } from './Settings';
 
 export default class Sensor {
 

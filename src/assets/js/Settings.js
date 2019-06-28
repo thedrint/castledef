@@ -142,3 +142,7 @@ export const WebFont = {
 		families: ['Press Start 2P:latin,cyrillic'],
 	},
 };
+
+export const Pathfind = {
+	checkDelay : 250,// in ms
+}

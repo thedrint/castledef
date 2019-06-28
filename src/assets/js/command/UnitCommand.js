@@ -1,6 +1,7 @@
+
 import Command from './Command';
 import Utils from './../Utils';
-import { Game as GameSettings, FPS } from './../Settings';
+import { Pathfind } from './../Settings';
 
 export class FollowTo extends Command {
 	run () {
@@ -27,14 +28,14 @@ export class FollowByPath extends Command {
 		if( Utils.distanceBetween(this.rec, this.currentTarget) <= 2 ) {
 			if( !this.coords.length )// It was last node in path - finish
 				this.ended();
-			else {
+			else 
 				this.currentTarget = this.coords.shift();
-			}
 		} 
 		// Periodically check if unit inLOS enemy
-		if( ((performance.now() - this.startTime) > 250) && this.rec.sensor.isEnemiesVisible() ) {
-			this.ended();
-			this.startTime = performance.now();
+		if( (performance.now() - this.startTime) > Pathfind.checkDelay ) {
+			if( this.rec.sensor.isEnemiesVisible() )
+				this.failed();
+			this.startTime = performance.now();// For next check
 		}
 		return result;
 	}
@@ -63,7 +64,7 @@ export class WeaponPierce extends Command {
 		let [enemy] = this.params;
 		this.rec.easeRotateTo(this.rec.getWeaponTargetAngle(enemy));
 		let result = this.rec.Weapon.pierce(enemy);
-		this.ended();
+		this.ended();// Yes, we can end this command bcoz Weapon.pierce use tween animation
 		return result;
 	}
 }

@@ -1,5 +1,4 @@
 
-import * as FERMAT from '@mathigon/fermat';
 import * as PIXI from 'pixi.js';
 import IntersectHelper from './../IntersectHelper';
 
@@ -19,6 +18,7 @@ import Party from './../Party';
 import PartyManager from './../PartyManager';
 import UnitManager from './../UnitManager';
 import RegistryManager from './../RegistryManager';
+
 import Crate from './../models/Crate';
 
 import Test from './../Test';
@@ -109,7 +109,7 @@ export default class MainScene extends Scene {
 			let com = fighter.tactic.analyse();
 			fighter.tactic.pool.add(com);
 		}
-		fighter.tactic.pool.executeCurrent();
+		fighter.tactic.pool.execute();
 		// Destroy
 		let closest = fighter.sensor.getClosestEnemy();
 		if( closest )

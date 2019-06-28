@@ -21,36 +21,28 @@ export default class PolygonMap {
 		this.startNodeIndex = 0;
 		this.endNodeIndex = 0;
 
-		if( w && h ) {
-			this.setMainPolygon(w,h);
-		}
+		if( w && h ) this.setMainPolygon(w,h);
   }
-
-  setMainPolygon (w,h) {
-  	this.polygons[0] = new Polygon( ...Utils.atoc([0,0, w,0, w,h, 0,h]) );
-  	return this;
-  }
-
-	Distance (v1, v2) {
-		return Utils.distanceBetween(v1, v2);
-	}
+  // Simplify creating of main poly
+  setMainPolygon (w,h) { this.polygons[0] = new Polygon( ...Utils.atoc([0,0, w,0, w,h, 0,h]) ); }
+  // Alias
+	Distance (v1, v2) { return Utils.distanceBetween(v1, v2); }
 	
 	//ported from http://www.david-gouveia.com/portfolio/pathfinding-on-a-2d-polygonal-map/
+	//TODO: Very strange method, i deleted some useless checks
 	InLineOfSight (start, end) {
 		performance.mark('InLineOfSight()');
-
-		let epsilon = 0.5;
-		// let epsilon = Number.Epsilon;
+		let epsilon = 0.5;//Number.Epsilon;
 
 		// Not in LOS if any of the ends is outside the polygon
 		//NOTE: I dont think it needed
-		performance.mark('checkInMainPoly()');
+		// performance.mark('checkInMainPoly()');
 		// if( !this.polygons[0].pointInside(start) || !this.polygons[0].pointInside(end) ) {
 		// 	performance.measure('checkInMainPoly', 'checkInMainPoly()');
 		// 	performance.measure('InLineOfSight', 'InLineOfSight()');
 		// 	return false;
 		// }
-		performance.measure('checkInMainPoly', 'checkInMainPoly()');
+		// performance.measure('checkInMainPoly', 'checkInMainPoly()');
 
 		// In LOS if it's the same start and end location
 		performance.mark('checkInTooClose()');
@@ -70,6 +62,7 @@ export default class PolygonMap {
 				if( this.LineSegmentsCross(start, end, v1, v2) ) {
 					performance.measure('checkEdgesForCross', 'checkEdgesForCross()');
 					performance.measure('InLineOfSight', 'InLineOfSight()');
+					// For performance reason i make return here, without additional check on "snapped endpoint"
 					return false;
 					//In some cases a 'snapped' endpoint is just a little over the line due to rounding errors. So a 0.5 margin is used to tackle those cases.
 					if( polygon.distanceToSegment(start.x, start.y, v1.x, v1.y, v2.x, v2.y ) > epsilon && polygon.distanceToSegment(end.x, end.y, v1.x, v1.y, v2.x, v2.y ) > epsilon ) {
@@ -88,8 +81,7 @@ export default class PolygonMap {
 		let middle = {x:(start.x + end.x) / 2, y:(start.y + end.y) / 2};//Vector.Add(start, end)/2;
 		let inside = this.polygons[0].pointInside(middle);// Check main poly
 		for( let i of Utils.range(this.polygons.length-1,1) ) {// Check others
-			if( this.polygons[i].pointInside(middle, false) ) 
-				inside = false;
+			if( this.polygons[i].pointInside(middle, false) ) inside = false;
 		}
 		performance.measure('checkMiddlePointInside', 'checkMiddlePointInside()');
 		performance.measure('InLineOfSight', 'InLineOfSight()');
@@ -132,6 +124,7 @@ export default class PolygonMap {
 	}
 	
 	//ported from http://www.david-gouveia.com/portfolio/pathfinding-on-a-2d-polygonal-map/
+	// Fast, but not exact - when one segment contains another - this function will fails
 	LineSegmentsCross (a, b, c, d){
 		performance.mark('LineSegmentsCross()');
 		let denominator = ((b.x - a.x) * (d.y - c.y)) - ((b.y - a.y) * (d.x - c.x));
@@ -169,16 +162,15 @@ export default class PolygonMap {
 	
 	calculatePath (from, to) {
 		performance.mark('calculatePath()');
-		// console.log(from, to);
 		//Clone the graph, so you can safely add new nodes without altering the original graph
 		this.walkgraph = this.mainwalkgraph.clone();
-		// Implements use of this const
+		//TODO: Implement use of this const
 		const mindistanceFrom = 100000;
 		const mindistanceTo = 100000;
 
 		//create new node on start position
 		this.startNodeIndex = this.walkgraph.nodes.length;
-		//TODO: Does we really need this check?
+		//TODO: Does we really need this checks?
 		// if( !this.polygons[0].pointInside(from) ) {
 		// 	from = this.polygons[0].getClosestPointOnEdge(from);
 		// }
@@ -200,7 +192,6 @@ export default class PolygonMap {
 		
 		this.targetx = to.x;
 		this.targety = to.y;
-
 
 		let startNode = new GraphNode({x:from.x, y:from.y});
 		let startNodeVector = {x:startNode.pos.x, y:startNode.pos.y};
@@ -230,26 +221,19 @@ export default class PolygonMap {
 		}
 		
 		//you can switch between A* and dijkstra algorithms by commenting one and uncommenting the other
-		performance.mark('AstarAlgorithm()');		
-		let astar = new AstarAlgorithm(this.walkgraph, this.startNodeIndex, this.endNodeIndex);
-		this.calculatedpath = astar.getPath();
-		performance.measure('AstarAlgorithm', 'AstarAlgorithm()');
-
-		// let dijkstra = new DijkstraAlgorithm(this.walkgraph, this.startNodeIndex, this.endNodeIndex);
-		// this.calculatedpath = dijkstra.getPath();
-		
+		//TODO: use Strategy pattern for this
+		performance.mark('PathfindAlgorithm()');		
+		let alg = new AstarAlgorithm(this.walkgraph, this.startNodeIndex, this.endNodeIndex);
+		// let alg = new DijkstraAlgorithm(this.walkgraph, this.startNodeIndex, this.endNodeIndex);
+		this.calculatedpath = alg.getPath();
+		performance.measure('PathfindAlgorithm', 'PathfindAlgorithm()');
 		performance.measure('calculatePath', 'calculatePath()');
 		return this.calculatedpath;
 	}
 
 	getPathNodes (calculatedPath = undefined) {
-		if( !calculatedPath ) {
-			calculatedPath = this.calculatedpath;
-		}
+		if( !calculatedPath ) calculatedPath = this.calculatedpath;
 		// Change nodes index to nodes coordinates
-		return calculatedPath.reduce( (a, n) => {
-			return [...a, this.walkgraph.nodes[n].pos];
-		}, []);
+		return calculatedPath.reduce( (a, n) => { return [...a, this.walkgraph.nodes[n].pos]; }, []);
 	}
-
 }

@@ -2,7 +2,7 @@
 import * as PIXI from 'pixi.js';
 import * as Angle from 'yy-angle';
 
-import * as Constants from './../Constants';
+import {ONE_DEGREE} from './../Constants';
 import { FPS } from './../Settings';
 import Utils from './../Utils';
 
@@ -43,7 +43,7 @@ export default class Container extends PIXI.Container {
 	discreteRotate (targetRotation) {
 		let angularVelocity = this.getAngularVelocity();
 		let diff = Angle.differenceAngles(targetRotation, this.rotation);
-		if( diff < Constants.ONE_DEGREE*2 ) 
+		if( diff < ONE_DEGREE*2 ) 
 			return false;// No need to rotate
 		if( diff >= angularVelocity ) 
 			this.rotateBy(Angle.differenceAnglesSign(targetRotation, this.rotation)*angularVelocity);

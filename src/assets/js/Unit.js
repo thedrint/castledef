@@ -1,7 +1,6 @@
 
 import * as PIXI from 'pixi.js';
 import IntersectHelper from './IntersectHelper';
-import * as Angle from 'yy-angle';
 import Vector from './base/Vector';
 
 import { Unit as UnitSettings, Defaults, FPS } from './Settings';
@@ -12,9 +11,6 @@ import Container from './base/Container';
 
 import Tactic from './Tactic';
 import Sensor from './Sensor';
-
-import PolygonMap from './pathfind/PolygonMap';
-import Polygon from './pathfind/Polygon';
 
 import Scene from './Scene';
 import Body from './models/Body';
@@ -80,7 +76,6 @@ export default class Unit extends Container {
 		let radius = params.size/2;
 
 		let models = [];
-		// let body = Scene.createShape(new PIXI.Ellipse(0, 0, radius, radius), params.armorColor);
 		let body = new Body({model:{color:params.colors.armor}});
 		body.spawnPoint = new PIXI.Point(0,0);
 		body.setTransform(body.spawnPoint.x, body.spawnPoint.y);
@@ -123,46 +118,20 @@ export default class Unit extends Container {
 		this.shape = new IntersectHelper.Rectangle(this);
 	}
 
-	get rightHand () {
-		return this._righthand;
-	}
+	get rightHand () { return this._righthand; }
+	set rightHand (item) { this._righthand = item; }
+	get leftHand () { return this._lefthand; }
+	set leftHand (item) { this._lefthand = item; }
 
-	set rightHand (item) {
-		this._righthand = item;
-	}
+	isReady () { return this.ready; }
 
-	get leftHand () {
-		return this._lefthand;
-	}
-
-	set leftHand (item) {
-		this._lefthand = item;
-	}
-
-	isReady () {
-		return this.ready;
-	}
-
-
-	get Body () {
-		return this.getChildByName('Body');
-	}
-
-	get Helmet () {
-		return this.getChildByName('Helmet');
-	}
-
-	get Weapon () {
-		return this.getChildByName('Weapon');
-	}
-
-	get Shield () {
-		return this.getChildByName('Shield');
-	}
+	get Body   () { return this.getChildByName('Body'); }
+	get Helmet () { return this.getChildByName('Helmet'); }
+	get Weapon () { return this.getChildByName('Weapon'); }
+	get Shield () { return this.getChildByName('Shield'); }
 
 	hitHp (target) {
-		if( target.attrs.immortal )
-			return;
+		if( target.attrs.immortal ) return;
 
 		let damage = this.calcHpDamage() - this.calcHpDefend();
 		target.attrs.hp -= damage;
@@ -178,9 +147,7 @@ export default class Unit extends Container {
 		return fullHp;
 	}
 
-	isDied () {
-		return this.attrs.hp <= 0;
-	}
+	isDied () { return this.attrs.hp <= 0; }
 
 	die () {
 		this.emit('die');
@@ -230,9 +197,10 @@ export default class Unit extends Container {
 		return Utils.getPointAngle(this, targetPoint);
 	}
 
-	getClosest () {
-		return this.sensor.getClosest();
-	}
+	// @deprecated - for compatibility only
+	getClosest       () { return this.sensor.getClosest(); }
+	getClosestEnemy  () { return this.sensor.getClosestEnemy(); }
+	getClosestFriend () { return this.sensor.getClosestFriend(); }
 
 	followTo (target, speedInPixels = undefined) {
 		if( !speedInPixels )
@@ -251,27 +219,11 @@ export default class Unit extends Container {
 		return this.followTo(backwardPosition, speed);
 	}
 
-	getClosestFriend () {
-		let closest = undefined;
-		for( let unit of this.party.units ) {
-			if( unit == this )
-				continue;
-
-			let distance = Utils.distance(this, unit);
-			if( !closest || closest.distance > distance )
-				closest = {unit, distance};
-		}
-
-		return closest;
-	}
-
 	/**
 	 * Returns "world center" of unit (in fact center of his body for simplify)
 	 * @return PIXI.Point {x, y}
 	 */
-	getCenter () {
-		return IntersectHelper.getShapeCenter(this.Body);
-	}
+	getCenter () { return IntersectHelper.getShapeCenter(this.Body); }
 
 	getLOS (target, color = Colors.black, size = 1) {
 		let los = this.sensor.getLOS(target);

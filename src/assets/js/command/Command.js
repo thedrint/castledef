@@ -13,23 +13,25 @@ export default class Command {
 		this.rec    = receiver;// Who executes command, receiver, recipient
 		this.name   = name;// Command name
 		this.params = params;// array of params
-		this.state = undefined;// current state of command
+		this.result = undefined;// result of command
+		this.state  = undefined;// current state of command
 		this.started();
 	}
 
 	/**
 	 * Flow of executing command
-	 * @return {Any} Result of executed command or false
+	 * @return {Command} This command object with result of run in this.result field
 	 */
 	execute () {
 		this.executed();
 		// Make some pre-actions
 		if( !this.pre() ) {
 			this.failed();
-			return false;
+			return this;
 		}
 		// Run some code that return result
-		return this.run();
+		this.result = this.run();
+		return this;
 	}
 
 	/**
@@ -38,7 +40,7 @@ export default class Command {
 	 * @return {Any} Any result of command
 	 */
 	run () {
-		this.ended();// or failed() or still executed() or pended()
+		this.ended();// or failed() or still executed() or pended() or something else
 		return true;
 	}
 
@@ -46,10 +48,7 @@ export default class Command {
 	 * Pre-run hook
 	 * @return {bool} If returns false - main execute will be aborted
 	 */
-	pre () {
-		// console.log(`${this.rec.name} prepares command "${this.name}" with next params:`, ...this.params);
-		return true;
-	}
+	pre () { return true; }
 
 	// Aliases for set different states
 	started  () { this.state = Command.STATE.CREATE; }
@@ -57,8 +56,8 @@ export default class Command {
 	ended    () { this.state = Command.STATE.FINISH; }
 	failed   () { this.state = Command.STATE.FAIL; }
 	// Aliases for get different states
-	isStarted  () { return this.state == Command.STATE.CREATE; }
-	isExecuted () { return this.state == Command.STATE.EXECUTE; }
-	isEnded    () { return this.state == Command.STATE.FINISH; }
-	isFailed   () { return this.state == Command.STATE.FAIL; }
+	get isStarted  () { return this.state == Command.STATE.CREATE; }
+	get isExecuted () { return this.state == Command.STATE.EXECUTE; }
+	get isEnded    () { return this.state == Command.STATE.FINISH; }
+	get isFailed   () { return this.state == Command.STATE.FAIL; }
 }
