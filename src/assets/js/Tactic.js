@@ -1,6 +1,5 @@
 
 import * as PIXI from 'pixi.js';
-import { Game as GameSettings, FPS } from './Settings';
 import Utils from './Utils';
 
 import Command from './command/Command';

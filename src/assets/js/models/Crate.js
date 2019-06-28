@@ -2,7 +2,7 @@
 import * as PIXI from 'pixi.js';
 import IntersectHelper from './../IntersectHelper';
 
-import { Game as GameSettings, Defaults } from './../Settings';
+import { Unit as UnitSettings, Defaults } from './../Settings';
 import Utils from './../Utils';
 
 import Container from './../base/Container';
@@ -33,36 +33,24 @@ export default class Crate extends Container {
 
 	initModel (model = Defaults.crate.model) {
 		let params = Utils.cleanOptionsObject(model, Defaults.crate.model);
+		let models = [];
 
-		let crateWidth = params.size * GameSettings.unit.size;
+		let crateWidth = params.size * UnitSettings.size;
 		let crateHeight = crateWidth;
 
-		let models = [];
-		let crate;
-		if( params.texture && params.texture.baseTexture ) {
-
-			let res = params.texture.baseTexture.resource;
-			let svgTexture = PIXI.BaseTexture.from(res);
-			svgTexture.setSize(crateWidth, crateHeight);
-			let crateTexture = new PIXI.Texture(svgTexture);
-			crate = PIXI.Sprite.from(crateTexture);
-			// crate.anchor.set(0.5);
-			crate.x -= crateWidth/2;
-			crate.y -= crateHeight/2;
-			// crate.pivot.x = 0.5 * crate.width;
-			// crate.pivot.y = 0.5 * crate.height;
-			// crate.angle = 45;
-			crate.name = `Crate`;
-			models.push(crate);
-		}
-		else {	
-			crate = Scene.createShape(new PIXI.Rectangle(0, 0, crateWidth, crateHeight), params.color);
-			// crate.pivot.x = 0.5 * crate.width;
-			// crate.pivot.y = 0.5 * crate.height;
-			crate.name = `Crate`;
-			models.push(crate);
-		}
-
+		let res = params.texture.baseTexture.resource;
+		let svgTexture = PIXI.BaseTexture.from(res);
+		svgTexture.setSize(crateWidth, crateHeight);
+		let crateTexture = new PIXI.Texture(svgTexture);
+		let crate = PIXI.Sprite.from(crateTexture);
+		// crate.anchor.set(0.5);
+		crate.x -= crateWidth/2;
+		crate.y -= crateHeight/2;
+		// crate.pivot.x = 0.5 * crate.width;
+		// crate.pivot.y = 0.5 * crate.height;
+		// crate.angle = 45;
+		crate.name = `Crate`;
+		models.push(crate);
 
 		this.addChild(...models);
 		this.pivot.x += 0;
@@ -71,7 +59,5 @@ export default class Crate extends Container {
 		this.shape = new IntersectHelper.Rectangle(this);
 	}
 
-	getModel () {
-		return this.getChildByName('Crate');
-	}
+	getModel () { return this.getChildByName('Crate'); }
 }

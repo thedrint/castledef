@@ -1,12 +1,10 @@
 
 import * as PIXI from 'pixi.js';
-import * as TWEEN from 'es6-tween';
 import * as Angle from 'yy-angle';
 
-import { Game as GameSettings, Application as ApplicationSettings, FPS } from './../Settings';
-import Utils from './../Utils';
-
 import * as Constants from './../Constants';
+import { FPS } from './../Settings';
+import Utils from './../Utils';
 
 export default class Container extends PIXI.Container {
 
@@ -17,10 +15,6 @@ export default class Container extends PIXI.Container {
 	moveTo (target, speedInPixels = 1) {
 		let lastCoords = {x:this.x, y:this.y};
 		Utils.follow(this, target, speedInPixels);
-		// if( this.x >= ApplicationSettings.width-GameSettings.unit.size || this.x < GameSettings.unit.size )
-		// 	this.x = lastCoords.x;
-		// if( this.y >= ApplicationSettings.height-GameSettings.unit.size || this.y < GameSettings.unit.size )
-		// 	this.y = lastCoords.y;
 	}
 
 	rotateTo (rad) {
@@ -58,6 +52,6 @@ export default class Container extends PIXI.Container {
 		return true;// Some rotate was doing
 	}
 
+	//TODO: Get current angular velocity (calc based on current fps)
 	getAngularVelocity () { return Angle.PI_2/FPS.target; }
-
 }

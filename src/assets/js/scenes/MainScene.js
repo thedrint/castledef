@@ -3,11 +3,11 @@ import * as FERMAT from '@mathigon/fermat';
 import * as PIXI from 'pixi.js';
 import IntersectHelper from './../IntersectHelper';
 
+import Vector from './../base/Vector';
 import Utils from './../Utils';
 
 import Colors from './../Colors';
-import * as Constants from './../Constants';
-import {Game as GameSettings, FPS} from './../Settings';
+import { UNIT } from './../Constants';
 
 import PolygonMap from './../pathfind/PolygonMap';
 import Polygon from './../pathfind/Polygon';
@@ -52,22 +52,19 @@ export default class MainScene extends Scene {
 		
 		// Create heroes and enemies
 		// See settings structure in Settings.Defaults.Unit to customize unit
-		let heroSettings = this.getUnitSettingsByTemplate(Constants.UNIT.TYPE.HERO, {name:`John Wick`});
-		let JohnWick = this.createUnit(heroSettings, Constants.UNIT.TYPE.HERO, Constants.UNIT.PARTY.HERO, 
-			new PIXI.Point(128, 128));
+		let heroTpl = this.getUnitSettingsByTemplate(UNIT.TYPE.HERO, {name:`John Wick`});
+		let JohnWick = this.createUnit(heroTpl, UNIT.TYPE.HERO, UNIT.PARTY.HERO, new Vector(128, 128));
 		// Let add another hero
-		// heroSettings = this.getUnitSettingsByTemplate(Constants.UNIT.TYPE.HERO, {name  :`Baba Yaga`, 
-		// 	model: {colors: {armor: Colors.monokai} }
-		// });
-		// let BabaYaga = this.createUnit(heroSettings, Constants.UNIT.TYPE.HERO, Constants.UNIT.PARTY.HERO, 
-		// 	new PIXI.Point(JohnWick.spawnPoint.x+160, JohnWick.spawnPoint.y+256));
+		heroTpl = this.getUnitSettingsByTemplate(UNIT.TYPE.HERO, {name  :`Baba Yaga`, 
+			model: {colors: {armor: Colors.monokai} }
+		});
+		let BabaYaga = this.createUnit(heroTpl, UNIT.TYPE.HERO, UNIT.PARTY.HERO, JohnWick.spawnPoint.clone().add(160,256));
 		// Now create first enemy
-		let enemySettings = this.getUnitSettingsByTemplate(Constants.UNIT.TYPE.UNIT, {name:`Bad Guy`});
-		let BadGuy = this.createUnit(enemySettings, Constants.UNIT.TYPE.UNIT, Constants.UNIT.PARTY.ENEMY, 
-			new PIXI.Point(JohnWick.spawnPoint.x+128, JohnWick.spawnPoint.y+0));
+		let enemyTpl = this.getUnitSettingsByTemplate(UNIT.TYPE.UNIT, {name:`Bad Guy`});
+		let BadGuy = this.createUnit(enemyTpl, UNIT.TYPE.UNIT, UNIT.PARTY.ENEMY, JohnWick.spawnPoint.clone().add(128,0));
 		BadGuy.angle = -135;
 		// Let First hero became a leader
-		this.party.get(Constants.UNIT.PARTY.HERO).setLeader(JohnWick);
+		this.party.get(UNIT.PARTY.HERO).setLeader(JohnWick);
 
 		// Add some obstacles to scene
 		let cratesOnScene = [
@@ -185,8 +182,8 @@ export default class MainScene extends Scene {
 				}, 1000);
 
 				setTimeout(() => {
-					let enemySettings = this.getUnitSettingsByTemplate(Constants.UNIT.TYPE.UNIT, {name:`Bad Guy`});
-					this.createUnit(enemySettings, Constants.UNIT.TYPE.UNIT, Constants.UNIT.PARTY.ENEMY, new PIXI.Point(
+					let enemySettings = this.getUnitSettingsByTemplate(UNIT.TYPE.UNIT, {name:`Bad Guy`});
+					this.createUnit(enemySettings, UNIT.TYPE.UNIT, UNIT.PARTY.ENEMY, new PIXI.Point(
 						Utils.randomInt(256, this.app.screen.width - 32),
 						Utils.randomInt(32, this.app.screen.height - 32)
 					));
@@ -225,8 +222,8 @@ export default class MainScene extends Scene {
 	}
 
 	createUnit (settings, 
-		type     = Constants.UNIT.TYPE.UNIT, 
-		party    = Constants.UNIT.PARTY.ENEMY, 
+		type     = UNIT.TYPE.UNIT, 
+		party    = UNIT.PARTY.ENEMY, 
 		position = new PIXI.Point(0,0)
 	) {
 		let unit = new type(settings);
@@ -243,7 +240,7 @@ export default class MainScene extends Scene {
 	getUnitSettingsByTemplate (typeTemplate, customSettings) {
 		let unitSettingsTpl;
 		switch( typeTemplate ) {
-			case Constants.UNIT.TYPE.HERO:
+			case UNIT.TYPE.HERO:
 				unitSettingsTpl = {
 					name  :`Some Hero`, 
 					attrs : {lvl:10, attack:10, immortal:true},
@@ -269,7 +266,7 @@ export default class MainScene extends Scene {
 				break;
 		}
 
-		return Object.assign({}, unitSettingsTpl, customSettings)
+		return Utils.deepMerge(unitSettingsTpl, customSettings)
 	}
 
 	drawFighterHelpers (f) {

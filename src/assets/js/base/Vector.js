@@ -17,21 +17,33 @@ export default class Vector extends PIXI.Point {
 		return new Vector(this.x, this.y);
 	}
 
-	add (v) {
-		this.x += v.x;
-		this.y += v.y;
+	point () {
+		return new PIXI.Point(this.x, this.y);
+	}
+
+	add (...params) {
+		if( !params.length ) return this;
+		if( params.length == 1 ) {// Vector
+			this.x += params[0].x;
+			this.y += params[0].y;
+		}
+		else {// coords
+			this.x += params[0];
+			this.y += params[1];
+		}
 		return this;
 	}
 
-	sub (v) {
-		this.x -= v.x;
-		this.y -= v.y;
-		return this;
-	}
-
-	invert (v) {
-		this.x *= -1;
-		this.y *= -1;
+	sub (...params) {
+		if( !params.length ) return this;
+		if( params.length == 1 ) {// Vector
+			this.x -= params[0].x;
+			this.y -= params[0].y;
+		}
+		else {// Coords
+			this.x -= params[0];
+			this.y -= params[1];
+		}
 		return this;
 	}
 
@@ -51,6 +63,11 @@ export default class Vector extends PIXI.Point {
 			this.x *= invScalar;
 			this.y *= invScalar;
 		}
+		return this;
+	}
+
+	invert (v) {
+		return this.multiplyScalar(-1);
 		return this;
 	}
 

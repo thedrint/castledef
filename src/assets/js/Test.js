@@ -1,6 +1,6 @@
 
-import Utils from './Utils';
 import Colors from './Colors';
+import Utils from './Utils';
 
 export default class Test {
 

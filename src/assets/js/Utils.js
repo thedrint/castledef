@@ -8,6 +8,22 @@ export default class Utils {
 
 	constructor() {}
 
+	// https://stackoverflow.com/questions/27936772/how-to-deep-merge-instead-of-shallow-merge
+	static deepMerge (...objects) {
+		const isObject = obj => obj && typeof obj === 'object';
+		return objects.reduce((prev, obj) => {
+			Object.keys(obj).forEach(key => {
+				const pVal = prev[key], oVal = obj[key];
+				if (Array.isArray(pVal) && Array.isArray(oVal)) 
+					prev[key] = pVal.concat(...oVal);
+				else if (isObject(pVal) && isObject(oVal)) 
+					prev[key] = this.deepMerge(pVal, oVal);
+				else 
+					prev[key] = oVal;
+			});
+			return prev;
+		}, {});
+	}
 	/**
 	 * This method filter plain-options object by defaults object by key, than merge filtered with defaults.
 	 * @param  {Object} options  any plain object with options, like {a:123, b:456, c: 789}
@@ -29,7 +45,7 @@ export default class Utils {
 			}, {});
 
 		// Merge default options with filtered and return this new object
-		return Object.assign({}, defaults, filteredOptions);
+		return this.deepMerge(defaults, filteredOptions);
 	}
 
 	/*

@@ -2,7 +2,7 @@
 import * as PIXI from 'pixi.js';
 import IntersectHelper from './../IntersectHelper';
 
-import { Game as GameSettings, Defaults } from './../Settings';
+import { Unit as UnitSettings, Defaults } from './../Settings';
 import Utils from './../Utils';
 
 import Container from './../base/Container';
@@ -33,11 +33,9 @@ export default class Shield extends Container {
 
 	initModel (model = Defaults.shield.model) {
 		let params = Utils.cleanOptionsObject(model, Defaults.shield.model);
-
-		let plateWidth = params.size * GameSettings.unit.size;
-		let plateHeight = 7;//TODO: Replace magic number with setting or formula
-
 		let models = [];
+
+		let plateWidth = params.size * UnitSettings.size;
 
 		let res = params.texture.baseTexture.resource;
 		let svgTexture = PIXI.BaseTexture.from(res);
@@ -53,7 +51,5 @@ export default class Shield extends Container {
 		this.shape = new IntersectHelper.Rectangle(this);
 	}
 
-	getModel () {
-		return this.getChildByName('Plate');
-	}
+	getModel () { return this.getChildByName('Plate'); }
 }

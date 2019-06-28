@@ -4,7 +4,7 @@ import IntersectHelper from './IntersectHelper';
 import * as Angle from 'yy-angle';
 import Vector from './base/Vector';
 
-import { Game as GameSettings, Defaults, FPS } from './Settings';
+import { Unit as UnitSettings, Defaults, FPS } from './Settings';
 
 import Utils from './Utils';
 
@@ -205,7 +205,7 @@ export default class Unit extends Container {
 	}
 
 	getSpeed () {
-		let baseSpeed = this.attrs.speed*GameSettings.unit.size;
+		let baseSpeed = this.attrs.speed*UnitSettings.size;
 		let speedMod = baseSpeed*this.skills.agility/10;
 		return baseSpeed + speedMod;
 	}
@@ -226,12 +226,8 @@ export default class Unit extends Container {
 		// This is new point in unit local where unit must look, if he want to pierce target's center
 		vecTarget.add(vecDestination);
 		let targetPoint = this.toGlobal(vecTarget);
-		// console.log(this.name, targetPoint);
 		// Now we can get angle
-		let targetRad = Utils.getPointAngle(this, targetPoint);
-		let targetDeg = Angle.toDegrees(targetRad);
-		// console.log(`${this.name} targetPoint is`, targetPoint, `and targetAngle is ${targetDeg} deg`);
-		return targetRad;
+		return Utils.getPointAngle(this, targetPoint);
 	}
 
 	getClosest () {

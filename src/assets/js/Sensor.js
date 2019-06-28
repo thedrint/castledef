@@ -1,7 +1,7 @@
 
 import * as PIXI from 'pixi.js';
 import Utils from './Utils';
-import { Game as GameSettings } from './Settings';
+import { Game as GameSettings, Unit as UnitSettings } from './Settings';
 
 export default class Sensor {
 
@@ -28,7 +28,7 @@ export default class Sensor {
 
 	isClosestEnemyNear (closestEnemy = undefined) {
 		let enemy = closestEnemy || this.getClosestEnemy();
-		return ( enemy && (enemy.distance <= GameSettings.unit.size*2) );
+		return ( enemy && (enemy.distance <= UnitSettings.size*2) );
 	}
 
 	isEnemyVisible (enemy) {
@@ -36,7 +36,7 @@ export default class Sensor {
 	}
 
 	isEnemyNear (enemy) {
-		return (this.getDistanceTo(enemy) <= GameSettings.unit.size*2 );
+		return (this.getDistanceTo(enemy) <= UnitSettings.size*2 );
 	}
 
 	isEnemiesVisible () {
@@ -52,7 +52,7 @@ export default class Sensor {
 
 	isEnemiesNear () {//TODO: implement
 		let enemy = this.getClosestEnemy();
-		return ( enemy && (enemy.distance <= GameSettings.unit.size*2) );
+		return ( enemy && (enemy.distance <= UnitSettings.size*2) );
 	}
 
 	getDistanceTo (unit) {

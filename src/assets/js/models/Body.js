@@ -2,7 +2,7 @@
 import * as PIXI from 'pixi.js';
 import IntersectHelper from './../IntersectHelper';
 
-import { Game as GameSettings, Defaults } from './../Settings';
+import { Unit as UnitSettings, Defaults } from './../Settings';
 import Utils from './../Utils';
 
 import Graphics from './../base/Graphics';
@@ -34,7 +34,7 @@ export default class Body extends Graphics {
 	initModel (model = Defaults.body.model) {
 		let params = Utils.cleanOptionsObject(model, Defaults.body.model);
 
-		let bodyWidth = params.size * GameSettings.unit.size;
+		let bodyWidth = params.size * UnitSettings.size;
 
 		let models = [];
 		let body = Scene.createShape(new PIXI.Ellipse(0, 0, bodyWidth/2, bodyWidth/2), params.color);
@@ -44,16 +44,11 @@ export default class Body extends Graphics {
 		this.addChild(...models);
 		this.pivot.x += 0.5 * bodyWidth;
 		this.pivot.y += 0.5 * bodyWidth;
-
-
 		this.shape = new IntersectHelper.Circle(this);
 	}
 
-	getBody () {
-		return this.getChildByName('Body');
-	}
+	getModel () { return this.getChildByName('Body'); }
+	getBody () { return this.getModel(); }
 
-	getWidth () {
-		return this.width;
-	}
+	getWidth () { return this.width; }
 }

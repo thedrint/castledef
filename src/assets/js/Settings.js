@@ -18,9 +18,14 @@ export const FPS = {
 export const Game = {
 	title: `CastleDef`,
 	version: `0.0.1-pixi`,
+	tile: 32,
 	unit: {
 		size: 64,
 	},
+};
+
+export const Unit = {
+	size: 64,
 };
 
 export const Defaults = {

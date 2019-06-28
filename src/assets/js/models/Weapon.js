@@ -3,7 +3,7 @@ import * as PIXI from 'pixi.js';
 import * as TWEEN from 'es6-tween';
 import IntersectHelper from './../IntersectHelper';
 
-import { Game as GameSettings, Defaults } from './../Settings';
+import { Unit as UnitSettings, Defaults } from './../Settings';
 import Utils from './../Utils';
 
 export default class Weapon extends PIXI.Container {
@@ -35,7 +35,7 @@ export default class Weapon extends PIXI.Container {
 		let params = Utils.cleanOptionsObject(model, Defaults.weapon.model);
 		let models = [];
 
-		let bladeLength = params.size * GameSettings.unit.size;
+		let bladeLength = params.size * UnitSettings.size;
 
 		let res = params.texture.baseTexture.resource;
 		let svgTexture = PIXI.BaseTexture.from(res);
@@ -48,13 +48,6 @@ export default class Weapon extends PIXI.Container {
 
 		this.addChild(...models);
 		this.shape = new IntersectHelper.Rectangle(this);
-	}
-
-	getModel () {
-		return this.getChildByName(`Blade`);
-	}
-	getLength () {
-		return this.width;
 	}
 
 	pierce (target, speed = 300) {
@@ -81,4 +74,7 @@ export default class Weapon extends PIXI.Container {
 
 		this.piercing = tween;
 	}
+
+	getModel () { return this.getChildByName(`Blade`); }
+	getLength () { return this.width; }
 }
