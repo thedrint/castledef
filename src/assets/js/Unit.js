@@ -166,10 +166,10 @@ export default class Unit extends Container {
 
 		let damage = this.calcHpDamage() - this.calcHpDefend();
 		target.attrs.hp -= damage;
-		console.log(`${this.name} hitted ${target.name} with ${damage} damage`);
+		// console.log(`${this.name} hitted ${target.name} with ${damage} damage`);
 		if( target.isDied() ) {
 			//TODO: Event - Target unit dies
-			console.log(`${target.name} killed!`);
+			// console.log(`${target.name} killed!`);
 		}
 	}
 
